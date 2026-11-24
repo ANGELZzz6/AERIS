@@ -1,4 +1,4 @@
-# Rendimiento y arquitectura de Islas del escritorio
+# Rendimiento y arquitectura de AERIS
 
 ## 1. Diagnóstico del problema de lentitud del ratón (Fase 2)
 
@@ -20,7 +20,7 @@ En la versión inicial de Fase 2, el ratón del sistema se volvía extremadament
 1. Compila y ejecuta en modo Release:
    ```powershell
    dotnet build .\IslasEscritorio.sln -c Release
-   .\src\IslasEscritorio\bin\Release\net8.0-windows\IslasEscritorio.exe
+   .\src\IslasEscritorio\bin\Release\net8.0-windows\AERIS.exe
    ```
 2. Abre el **Administrador de tareas** o ejecuta en PowerShell:
    ```powershell

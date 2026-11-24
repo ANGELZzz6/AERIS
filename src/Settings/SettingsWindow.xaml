@@ -1,7 +1,7 @@
 <Window x:Class="IslasEscritorio.Settings.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Islas del escritorio · Ajustes"
+        Title="AERIS · Ajustes"
         Width="980"
         Height="680"
         MinWidth="840"
