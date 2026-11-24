@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>AERIS</AssemblyName>
+    <RootNamespace>IslasEscritorio</RootNamespace>
+    <ApplicationIcon>..\..\assets\aeris.ico</ApplicationIcon>
+    <StartupObject>IslasEscritorio.Program</StartupObject>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Core\**\*.cs" LinkBase="Core" />
+    <Compile Include="..\Input\**\*.cs" LinkBase="Input" />
+    <Compile Include="..\Desktop\**\*.cs" LinkBase="Desktop" />
+    <Compile Include="..\Inventory\**\*.cs" LinkBase="Inventory" />
+    <Compile Include="..\Islands\**\*.cs" LinkBase="Islands" />
+    <Compile Include="..\Settings\**\*.cs" LinkBase="Settings" />
+    <Compile Include="..\Tray\**\*.cs" LinkBase="Tray" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="..\Islands\IslandWindow.xaml" Link="Islands\IslandWindow.xaml" />
+    <Page Include="..\Settings\SettingsWindow.xaml" Link="Settings\SettingsWindow.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\config\config.default.json" Link="config\config.default.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
