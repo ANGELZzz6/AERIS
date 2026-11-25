@@ -106,3 +106,7 @@ Las sugerencias y reportes de errores son bienvenidos mediante GitHub Issues. In
 ## Licencia
 
 Aún no se ha definido una licencia. Hasta que se añada una, el repositorio no concede permisos adicionales de redistribución o modificación.
+
+### Isla de música
+
+Al crear o editar una isla, selecciona **Música** en el campo **Función**. AERIS consulta la sesión multimedia que Windows considera activa y muestra título, artista/aplicación y controles de pista anterior, reproducir/pausar y siguiente. La API del sistema funciona con reproductores que publican una sesión de controles multimedia; la disponibilidad depende de la app y su configuración. La isla actualiza su estado cada dos segundos mientras está activa.

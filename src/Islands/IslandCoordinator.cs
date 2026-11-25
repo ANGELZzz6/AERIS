@@ -105,7 +105,9 @@ public sealed class IslandCoordinator : IDisposable
     }
 
     public IReadOnlyList<DesktopItem> GetFilteredItemsForIsland(IslandConfig island) =>
-        FilterMatcher.FilterAndSort(_inventory.GetItemsSnapshot(), island.Contenido);
+        string.Equals(island.Tipo, "musica", StringComparison.OrdinalIgnoreCase)
+            ? []
+            : FilterMatcher.FilterAndSort(_inventory.GetItemsSnapshot(), island.Contenido);
 
     public IReadOnlyList<DesktopItem> GetAllDesktopItems() => _inventory.GetItemsSnapshot();
 
@@ -157,7 +159,9 @@ public sealed class IslandCoordinator : IDisposable
                 win.UpdateConfiguration(zone, config.Appearance, config.Activation.SiempreEncima);
             }
 
-            IReadOnlyList<DesktopItem> filtered = FilterMatcher.FilterAndSort(allItems, zone.Config.Contenido);
+            IReadOnlyList<DesktopItem> filtered = string.Equals(zone.Config.Tipo, "musica", StringComparison.OrdinalIgnoreCase)
+                ? []
+                : FilterMatcher.FilterAndSort(allItems, zone.Config.Contenido);
             win.RenderItems(filtered, _inventory.IconCache);
         }
     }
@@ -169,7 +173,9 @@ public sealed class IslandCoordinator : IDisposable
         {
             if (_windows.TryGetValue(zone.RuntimeId, out IslandWindow? win))
             {
-                IReadOnlyList<DesktopItem> filtered = FilterMatcher.FilterAndSort(allItems, zone.Config.Contenido);
+                IReadOnlyList<DesktopItem> filtered = string.Equals(zone.Config.Tipo, "musica", StringComparison.OrdinalIgnoreCase)
+                    ? []
+                    : FilterMatcher.FilterAndSort(allItems, zone.Config.Contenido);
                 win.RenderItems(filtered, _inventory.IconCache);
             }
         }

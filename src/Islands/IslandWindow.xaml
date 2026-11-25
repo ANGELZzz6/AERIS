@@ -76,6 +76,15 @@
                               PanningMode="VerticalOnly">
                     <StackPanel x:Name="ContentHost"/>
                 </ScrollViewer>
+                <StackPanel x:Name="MusicHost" Grid.Row="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
+                    <TextBlock x:Name="MusicTrackText" Text="No hay música activa" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="MusicArtistText" Text="Inicia la reproducción en una app compatible" Opacity="0.72" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="|◀" Padding="12,6" Margin="3" Click="OnPreviousTrackClick"/>
+                        <Button x:Name="MusicPlayPauseButton" Content="▶ / ⏸" Padding="12,6" Margin="3" Click="OnPlayPauseClick"/>
+                        <Button Content="▶|" Padding="12,6" Margin="3" Click="OnNextTrackClick"/>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

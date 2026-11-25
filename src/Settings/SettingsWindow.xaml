@@ -160,60 +160,66 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Nombre:"/>
-                                <TextBox Grid.Row="0" Grid.Column="1" x:Name="IslandNameBox" Margin="0,3" TextChanged="OnIslandFieldChanged"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Función:"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" x:Name="IslandTypeCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged">
+                                    <ComboBoxItem Content="Archivos y carpetas" Tag="archivos"/>
+                                    <ComboBoxItem Content="Música" Tag="musica"/>
+                                </ComboBox>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Nombre:"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" x:Name="IslandNameBox" Margin="0,3" TextChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="ID:"/>
-                                <TextBox Grid.Row="1" Grid.Column="1" x:Name="IslandIdBox" Margin="0,3" TextChanged="OnIslandFieldChanged"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="ID:"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" x:Name="IslandIdBox" Margin="0,3" TextChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Borde / esquina:"/>
-                                <ComboBox Grid.Row="2" Grid.Column="1" x:Name="IslandEdgeCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Borde / esquina:"/>
+                                <ComboBox Grid.Row="3" Grid.Column="1" x:Name="IslandEdgeCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Ancla:"/>
-                                <ComboBox Grid.Row="3" Grid.Column="1" x:Name="IslandAnchorCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Ancla:"/>
+                                <ComboBox Grid.Row="4" Grid.Column="1" x:Name="IslandAnchorCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Monitor:"/>
-                                <TextBox Grid.Row="4" Grid.Column="1" x:Name="IslandMonitorBox" Margin="0,3"
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Monitor:"/>
+                                <TextBox Grid.Row="5" Grid.Column="1" x:Name="IslandMonitorBox" Margin="0,3"
                                          ToolTip="principal, todos, o índice (0, 1...)" TextChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Ancho (px / %):"/>
-                                <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Ancho (px / %):"/>
+                                <StackPanel Grid.Row="6" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                                     <TextBox x:Name="IslandWidthPxBox" Width="80" Margin="0,0,8,0" ToolTip="Ancho en px (opcional)" TextChanged="OnIslandFieldChanged"/>
                                     <TextBox x:Name="IslandWidthPctBox" Width="80" ToolTip="Ancho en % (opcional)" TextChanged="OnIslandFieldChanged"/>
                                 </StackPanel>
 
-                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Alto (px / %):"/>
-                                <StackPanel Grid.Row="6" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                                <TextBlock Grid.Row="7" Grid.Column="0" Text="Alto (px / %):"/>
+                                <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                                     <TextBox x:Name="IslandHeightPxBox" Width="80" Margin="0,0,8,0" ToolTip="Alto en px (opcional)" TextChanged="OnIslandFieldChanged"/>
                                     <TextBox x:Name="IslandHeightPctBox" Width="80" ToolTip="Alto en % (opcional)" TextChanged="OnIslandFieldChanged"/>
                                 </StackPanel>
 
-                                <TextBlock Grid.Row="7" Grid.Column="0" Text="Desplazamiento X/Y:"/>
-                                <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                                <TextBlock Grid.Row="8" Grid.Column="0" Text="Desplazamiento X/Y:"/>
+                                <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                                     <TextBox x:Name="IslandOffsetXBox" Width="80" Margin="0,0,8,0" TextChanged="OnIslandFieldChanged"/>
                                     <TextBox x:Name="IslandOffsetYBox" Width="80" TextChanged="OnIslandFieldChanged"/>
                                 </StackPanel>
 
-                                <TextBlock Grid.Row="8" Grid.Column="0" Text="Color acento (#hex):"/>
-                                <TextBox Grid.Row="8" Grid.Column="1" x:Name="IslandAccentBox" Margin="0,3" TextChanged="OnIslandFieldChanged"/>
+                                <TextBlock Grid.Row="9" Grid.Column="0" Text="Color acento (#hex):"/>
+                                <TextBox Grid.Row="9" Grid.Column="1" x:Name="IslandAccentBox" Margin="0,3" TextChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="9" Grid.Column="0" Text="Disposición:"/>
-                                <ComboBox Grid.Row="9" Grid.Column="1" x:Name="IslandLayoutCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged"/>
+                                <TextBlock Grid.Row="10" Grid.Column="0" Text="Disposición:"/>
+                                <ComboBox Grid.Row="10" Grid.Column="1" x:Name="IslandLayoutCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="10" Grid.Column="0" Text="Orden y agrupación:"/>
-                                <StackPanel Grid.Row="10" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                                <TextBlock Grid.Row="11" Grid.Column="0" Text="Orden y agrupación:"/>
+                                <StackPanel Grid.Row="11" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                                     <ComboBox x:Name="IslandSortCombo" Width="135" Margin="0,0,8,0" SelectionChanged="OnIslandFieldChanged"/>
                                     <ComboBox x:Name="IslandGroupCombo" Width="115" SelectionChanged="OnIslandFieldChanged"/>
                                 </StackPanel>
 
-                                <TextBlock Grid.Row="11" Grid.Column="0" Text="Incluir (patrones):"/>
-                                <TextBox Grid.Row="11" Grid.Column="1" x:Name="IslandIncludeBox" Margin="0,3"
+                                <TextBlock Grid.Row="12" Grid.Column="0" Text="Incluir (patrones):"/>
+                                <TextBox Grid.Row="12" Grid.Column="1" x:Name="IslandIncludeBox" Margin="0,3"
                                          ToolTip="Separados por coma, ej.: *.docx, *.pdf, *.lnk" TextChanged="OnIslandFieldChanged"/>
 
-                                <TextBlock Grid.Row="12" Grid.Column="0" Text="Excluir (patrones):"/>
-                                <TextBox Grid.Row="12" Grid.Column="1" x:Name="IslandExcludeBox" Margin="0,3"
+                                <TextBlock Grid.Row="13" Grid.Column="0" Text="Excluir (patrones):"/>
+                                <TextBox Grid.Row="13" Grid.Column="1" x:Name="IslandExcludeBox" Margin="0,3"
                                          ToolTip="Separados por coma, ej.: desktop.ini, *.tmp" TextChanged="OnIslandFieldChanged"/>
                             </Grid>
 
@@ -461,3 +467,4 @@
         </DockPanel>
     </Grid>
 </Window>
+

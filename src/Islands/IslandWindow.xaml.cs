@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using IslasEscritorio.Core;
 using IslasEscritorio.Input;
 using IslasEscritorio.Inventory;
@@ -22,6 +23,7 @@ using Orientation = System.Windows.Controls.Orientation;
 using Panel = System.Windows.Controls.Panel;
 using Point = System.Windows.Point;
 using WrapPanel = System.Windows.Controls.WrapPanel;
+using Windows.Media.Control;
 
 namespace IslasEscritorio.Islands;
 
@@ -46,6 +48,9 @@ public partial class IslandWindow : Window
 
     private Point? _dragStartPoint;
     private DesktopItem? _dragCandidateItem;
+    private readonly DispatcherTimer _mediaRefreshTimer = new() { Interval = TimeSpan.FromSeconds(2) };
+    private GlobalSystemMediaTransportControlsSessionManager? _mediaManager;
+    private GlobalSystemMediaTransportControlsSession? _currentMediaSession;
 
     public string RuntimeId => _zone.RuntimeId;
     public ScreenRect CurrentPhysicalBounds { get; private set; }
@@ -64,6 +69,7 @@ public partial class IslandWindow : Window
         CurrentPhysicalBounds = zone.TargetWindowRect;
 
         SourceInitialized += OnSourceInitialized;
+        _mediaRefreshTimer.Tick += async (_, _) => await RefreshMediaAsync();
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
@@ -91,6 +97,16 @@ public partial class IslandWindow : Window
 
     public void RenderItems(IReadOnlyList<DesktopItem> items, IconCache iconCache)
     {
+        bool isMusicIsland = string.Equals(_zone.Config.Tipo, "musica", StringComparison.OrdinalIgnoreCase);
+        ItemsScrollViewer.Visibility = isMusicIsland ? Visibility.Collapsed : Visibility.Visible;
+        MusicHost.Visibility = isMusicIsland ? Visibility.Visible : Visibility.Collapsed;
+        if (isMusicIsland)
+        {
+            _mediaRefreshTimer.Start();
+            _ = RefreshMediaAsync();
+            return;
+        }
+        _mediaRefreshTimer.Stop();
         TitleText.Text = string.IsNullOrWhiteSpace(_zone.Config.Nombre) ? _zone.Config.Id : _zone.Config.Nombre;
         CountText.Text = items.Count.ToString();
         ContentHost.Children.Clear();
@@ -149,6 +165,48 @@ public partial class IslandWindow : Window
         {
             AddItemsContainer(items, layout, iconSize, iconCache);
         }
+    }
+
+    private async Task RefreshMediaAsync()
+    {
+        try
+        {
+            _mediaManager ??= await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+            _currentMediaSession = _mediaManager.GetCurrentSession();
+            if (_currentMediaSession is null)
+            {
+                MusicTrackText.Text = "No hay música activa";
+                MusicArtistText.Text = "Inicia una reproducción en Spotify, el navegador u otra app multimedia";
+                return;
+            }
+
+            var properties = await _currentMediaSession.TryGetMediaPropertiesAsync();
+            MusicTrackText.Text = string.IsNullOrWhiteSpace(properties.Title) ? "Reproducción activa" : properties.Title;
+            MusicArtistText.Text = string.IsNullOrWhiteSpace(properties.Artist) ? _currentMediaSession.SourceAppUserModelId : properties.Artist;
+            var state = _currentMediaSession.GetPlaybackInfo().PlaybackStatus;
+            MusicPlayPauseButton.Content = state == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing ? "⏸ Pausar" : "▶ Reproducir";
+        }
+        catch
+        {
+            MusicTrackText.Text = "Sesión multimedia no disponible";
+            MusicArtistText.Text = "Comprueba que la aplicación publique controles multimedia de Windows";
+        }
+    }
+
+    private async void OnPlayPauseClick(object sender, RoutedEventArgs e)
+    {
+        if (_currentMediaSession is not null) await _currentMediaSession.TryTogglePlayPauseAsync();
+        await RefreshMediaAsync();
+    }
+    private async void OnPreviousTrackClick(object sender, RoutedEventArgs e)
+    {
+        if (_currentMediaSession is not null) await _currentMediaSession.TrySkipPreviousAsync();
+        await RefreshMediaAsync();
+    }
+    private async void OnNextTrackClick(object sender, RoutedEventArgs e)
+    {
+        if (_currentMediaSession is not null) await _currentMediaSession.TrySkipNextAsync();
+        await RefreshMediaAsync();
     }
 
     private void AddItemsContainer(
@@ -536,6 +594,7 @@ public partial class IslandWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        _mediaRefreshTimer.Stop();
         StopAnimationLoop();
         base.OnClosed(e);
     }

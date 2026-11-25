@@ -214,6 +214,8 @@ public sealed class AnimationConfig
 
 public sealed class IslandConfig
 {
+    [JsonPropertyName("tipo")]
+    public string Tipo { get; set; } = "archivos";
     [JsonPropertyName("id")]
     public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8];
 

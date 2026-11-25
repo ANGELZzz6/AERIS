@@ -206,6 +206,8 @@ public partial class SettingsWindow : Window
             if (island is null) return;
 
             IslandEnabledCheck.IsChecked = island.Habilitada;
+            IslandTypeCombo.SelectedValuePath = "Tag";
+            IslandTypeCombo.SelectedValue = island.Tipo;
             IslandNameBox.Text = island.Nombre;
             IslandIdBox.Text = island.Id;
             IslandEdgeCombo.SelectedItem = island.Borde;
@@ -253,6 +255,7 @@ public partial class SettingsWindow : Window
         if (island is null) return;
 
         island.Habilitada = IslandEnabledCheck.IsChecked == true;
+        island.Tipo = IslandTypeCombo.SelectedValue as string ?? "archivos";
         island.Nombre = IslandNameBox.Text.Trim();
         island.Id = string.IsNullOrWhiteSpace(IslandIdBox.Text) ? island.Id : IslandIdBox.Text.Trim();
         if (IslandEdgeCombo.SelectedItem is string edge) island.Borde = edge;
