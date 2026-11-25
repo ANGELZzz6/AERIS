@@ -110,3 +110,7 @@ Aún no se ha definido una licencia. Hasta que se añada una, el repositorio no 
 ### Isla de música
 
 Al crear o editar una isla, selecciona **Música** en el campo **Función**. AERIS consulta la sesión multimedia que Windows considera activa y muestra título, artista/aplicación y controles de pista anterior, reproducir/pausar y siguiente. La API del sistema funciona con reproductores que publican una sesión de controles multimedia; la disponibilidad depende de la app y su configuración. La isla actualiza su estado cada dos segundos mientras está activa.
+
+### Ajustes de islas especiales
+
+La pestaña **Islas especiales** permite seleccionar una isla especial y elegir si se activa desde un borde, permanece siempre visible o queda flotante y arrastrable. Las coordenadas iniciales, el color de fondo y la opacidad se guardan por isla. En modo flotante, arrastra desde el encabezado; AERIS guarda la nueva posición automáticamente. Estas opciones no cambian las zonas de las islas de archivos.

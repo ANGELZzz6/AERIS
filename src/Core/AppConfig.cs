@@ -216,6 +216,9 @@ public sealed class IslandConfig
 {
     [JsonPropertyName("tipo")]
     public string Tipo { get; set; } = "archivos";
+
+    [JsonPropertyName("presentacion")]
+    public SpecialIslandPresentation Presentacion { get; set; } = new();
     [JsonPropertyName("id")]
     public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8];
 
@@ -242,6 +245,20 @@ public sealed class IslandConfig
 
     [JsonPropertyName("estilo")]
     public IslandStyleConfig Estilo { get; set; } = new();
+}
+
+public sealed class SpecialIslandPresentation
+{
+    [JsonPropertyName("modo")]
+    public string Modo { get; set; } = "borde";
+    [JsonPropertyName("x")]
+    public int X { get; set; } = 300;
+    [JsonPropertyName("y")]
+    public int Y { get; set; } = 300;
+    [JsonPropertyName("colorFondo")]
+    public string? ColorFondo { get; set; }
+    [JsonPropertyName("opacidad")]
+    public double? Opacidad { get; set; }
 }
 
 public sealed class IslandPositionConfig

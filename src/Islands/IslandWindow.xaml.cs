@@ -35,6 +35,7 @@ public partial class IslandWindow : Window
     private AppearanceConfig _appearance;
     private bool _topmost;
     private Action<string, bool>? _onPinChanged;
+    private Action<string, int, int>? _onFloatingPositionChanged;
 
     private bool _isAnimating;
     private bool _animatingOpen;
@@ -59,13 +60,15 @@ public partial class IslandWindow : Window
         ResolvedIslandZone zone,
         AppearanceConfig appearance,
         bool topmost,
-        Action<string, bool>? onPinChanged = null)
+        Action<string, bool>? onPinChanged = null,
+        Action<string, int, int>? onFloatingPositionChanged = null)
     {
         InitializeComponent();
         _zone = zone;
         _appearance = appearance;
         _topmost = topmost;
         _onPinChanged = onPinChanged;
+        _onFloatingPositionChanged = onFloatingPositionChanged;
         CurrentPhysicalBounds = zone.TargetWindowRect;
 
         SourceInitialized += OnSourceInitialized;
@@ -393,6 +396,30 @@ public partial class IslandWindow : Window
         StartAnimation(opening: true);
     }
 
+    public void ShowPersistent()
+    {
+        Topmost = _topmost;
+        PositionWindow();
+        if (!IsVisible) Show();
+        PositionWindow();
+        ApplyAnimationFrame(1);
+    }
+
+    private void OnTitleMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (!string.Equals(_zone.Config.Tipo, "archivos", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(_zone.Config.Presentacion.Modo, "flotante", StringComparison.OrdinalIgnoreCase) &&
+            e.LeftButton == MouseButtonState.Pressed)
+        {
+            try { DragMove(); } catch (InvalidOperationException) { }
+            Point screen = PointToScreen(new Point(0, 0));
+            CurrentPhysicalBounds = new ScreenRect((int)screen.X, (int)screen.Y,
+                (int)screen.X + (int)Math.Round(Width), (int)screen.Y + (int)Math.Round(Height));
+            _onFloatingPositionChanged?.Invoke(_zone.Config.Id, (int)screen.X, (int)screen.Y);
+            e.Handled = true;
+        }
+    }
+
     public void AnimateClose()
     {
         if (!IsVisible)
@@ -503,7 +530,9 @@ public partial class IslandWindow : Window
             : _appearance.ColorFondo;
 
         Color baseBg = ParseColor(bgHex, isDark ? Color.FromRgb(30, 30, 46) : Color.FromRgb(245, 245, 250));
-        double opacity = Math.Clamp(_zone.Config.Estilo.Opacidad ?? _appearance.Opacidad, 0.1, 1.0);
+        double opacity = Math.Clamp(_zone.Config.Presentacion.Opacidad ?? _zone.Config.Estilo.Opacidad ?? _appearance.Opacidad, 0.1, 1.0);
+        if (!string.IsNullOrWhiteSpace(_zone.Config.Presentacion.ColorFondo)) bgHex = _zone.Config.Presentacion.ColorFondo!;
+        baseBg = ParseColor(bgHex, baseBg);
         _targetOpacity = opacity;
 
         byte alpha = (byte)Math.Round(opacity * 255);

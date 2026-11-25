@@ -50,12 +50,20 @@ public sealed class ZoneManager
         {
             if (!island.Habilitada) continue;
             if (!ConfigValidator.TryParseEdge(island.Borde, out IslandEdge edge)) continue;
+            SpecialIslandPresentation presentation = island.Presentacion ??= new SpecialIslandPresentation();
 
             foreach (MonitorInfo monitor in ResolveTargetMonitors(island, config.Activation, monitors))
             {
                 string runtimeId = $"{island.Id}@{monitor.Index}";
-                ScreenRect activationRect = ComputeActivationRect(edge, monitor.Bounds, _zoneThicknessPx);
-                ScreenRect targetRect = ComputeIslandWindowRect(island, edge, monitor);
+                bool special = !string.Equals(island.Tipo, "archivos", StringComparison.OrdinalIgnoreCase);
+                string mode = presentation.Modo;
+                bool persistent = special && mode is "siempre" or "flotante";
+                ScreenRect activationRect = persistent
+                    ? new ScreenRect(0, 0, 0, 0)
+                    : ComputeActivationRect(edge, monitor.Bounds, _zoneThicknessPx);
+                ScreenRect targetRect = special && mode == "flotante"
+                    ? new ScreenRect(presentation.X, presentation.Y, presentation.X + 340, presentation.Y + 180)
+                    : ComputeIslandWindowRect(island, edge, monitor);
 
                 var zone = new ResolvedIslandZone(runtimeId, island, edge, monitor, activationRect, targetRect);
                 var machine = new IslandStateMachine(

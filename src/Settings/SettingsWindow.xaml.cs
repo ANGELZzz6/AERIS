@@ -162,12 +162,35 @@ public partial class SettingsWindow : Window
             ShortcutSettingsBox.Text = cfg.Global.AtajoAjustes;
 
             RefreshIslandsList(selectIndex: cfg.Islands.Count > 0 ? 0 : -1);
+            SpecialIslandCombo.ItemsSource = cfg.Islands.Where(i => !string.Equals(i.Tipo, "archivos", StringComparison.OrdinalIgnoreCase)).ToList();
+            if (SpecialIslandCombo.Items.Count > 0) SpecialIslandCombo.SelectedIndex = 0;
         }
         finally
         {
             _loadingUi = false;
         }
         UpdateLivePreview();
+    }
+
+    private void OnSpecialIslandChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SpecialIslandCombo.SelectedItem is not IslandConfig island || SpecialModeCombo is null) return;
+        SpecialModeCombo.SelectedValue = island.Presentacion.Modo;
+        SpecialXBox.Text = island.Presentacion.X.ToString();
+        SpecialYBox.Text = island.Presentacion.Y.ToString();
+        SpecialBgBox.Text = island.Presentacion.ColorFondo ?? string.Empty;
+        SpecialOpacityBox.Text = island.Presentacion.Opacidad?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    private void CollectSpecialIslandSettings()
+    {
+        if (SpecialIslandCombo.SelectedItem is not IslandConfig island) return;
+        island.Presentacion.Modo = SpecialModeCombo.SelectedValue as string ?? "borde";
+        if (int.TryParse(SpecialXBox.Text, out int x)) island.Presentacion.X = x;
+        if (int.TryParse(SpecialYBox.Text, out int y)) island.Presentacion.Y = y;
+        island.Presentacion.ColorFondo = string.IsNullOrWhiteSpace(SpecialBgBox.Text) ? null : SpecialBgBox.Text.Trim();
+        island.Presentacion.Opacidad = double.TryParse(SpecialOpacityBox.Text, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out double opacity) ? opacity : null;
     }
 
     private void RefreshIslandsList(int selectIndex)
@@ -256,6 +279,10 @@ public partial class SettingsWindow : Window
 
         island.Habilitada = IslandEnabledCheck.IsChecked == true;
         island.Tipo = IslandTypeCombo.SelectedValue as string ?? "archivos";
+        string? currentSpecialId = (SpecialIslandCombo.SelectedItem as IslandConfig)?.Id;
+        SpecialIslandCombo.ItemsSource = _workingConfig.Islands.Where(i => !string.Equals(i.Tipo, "archivos", StringComparison.OrdinalIgnoreCase)).ToList();
+        SpecialIslandCombo.SelectedItem = _workingConfig.Islands.FirstOrDefault(i => i.Id == currentSpecialId)
+            ?? _workingConfig.Islands.FirstOrDefault(i => !string.Equals(i.Tipo, "archivos", StringComparison.OrdinalIgnoreCase));
         island.Nombre = IslandNameBox.Text.Trim();
         island.Id = string.IsNullOrWhiteSpace(IslandIdBox.Text) ? island.Id : IslandIdBox.Text.Trim();
         if (IslandEdgeCombo.SelectedItem is string edge) island.Borde = edge;
@@ -412,6 +439,7 @@ public partial class SettingsWindow : Window
 
     private bool CollectNonIslandFieldsAndSave()
     {
+        CollectSpecialIslandSettings();
         _workingConfig.Global.OcultarIconosEscritorio = HideDesktopIconsCheck.IsChecked == true;
         _workingConfig.Global.IniciarConWindows = StartWithWindowsCheck.IsChecked == true;
         _workingConfig.Global.Idioma = LanguageCombo.SelectedIndex == 1 ? "en" : "es";

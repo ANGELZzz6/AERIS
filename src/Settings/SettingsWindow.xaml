@@ -420,6 +420,31 @@
                 </Grid>
             </TabItem>
 
+            <TabItem Header="Islas especiales">
+                <StackPanel Margin="20" MaxWidth="680" HorizontalAlignment="Left">
+                    <TextBlock Text="Comportamiento independiente de las islas especiales" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBlock Text="Estas opciones solo afectan a islas como Música; las islas de archivos conservan sus zonas y ajustes actuales." TextWrapping="Wrap" Opacity="0.75" Margin="0,0,0,14"/>
+                    <TextBlock Text="Isla:"/>
+                    <ComboBox x:Name="SpecialIslandCombo" Width="320" HorizontalAlignment="Left" DisplayMemberPath="Nombre" SelectionChanged="OnSpecialIslandChanged" Margin="0,4,0,12"/>
+                    <TextBlock Text="Despliegue:"/>
+                    <ComboBox x:Name="SpecialModeCombo" Width="320" HorizontalAlignment="Left" SelectedValuePath="Tag" Margin="0,4,0,12">
+                        <ComboBoxItem Content="Activar desde el borde" Tag="borde"/>
+                        <ComboBoxItem Content="Siempre visible" Tag="siempre"/>
+                        <ComboBoxItem Content="Flotante y arrastrable" Tag="flotante"/>
+                    </ComboBox>
+                    <TextBlock Text="Posición flotante (coordenadas de pantalla):"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,12">
+                        <TextBox x:Name="SpecialXBox" Width="100" ToolTip="X" Margin="0,0,8,0"/>
+                        <TextBox x:Name="SpecialYBox" Width="100" ToolTip="Y"/>
+                    </StackPanel>
+                    <TextBlock Text="Color de fondo propio (#hex, opcional):"/>
+                    <TextBox x:Name="SpecialBgBox" Width="200" HorizontalAlignment="Left" Margin="0,4,0,12"/>
+                    <TextBlock Text="Opacidad propia (0.1–1, opcional):"/>
+                    <TextBox x:Name="SpecialOpacityBox" Width="120" HorizontalAlignment="Left" Margin="0,4,0,12"/>
+                    <TextBlock Text="Con el modo flotante, arrastra la isla desde su encabezado. La posición se guarda automáticamente." TextWrapping="Wrap" Opacity="0.75"/>
+                </StackPanel>
+            </TabItem>
+
             <!-- 5. ATAJOS -->
             <TabItem Header="Atajos">
                 <StackPanel Margin="18" MaxWidth="560" HorizontalAlignment="Left">

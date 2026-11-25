@@ -151,7 +151,8 @@ public sealed class IslandCoordinator : IDisposable
                     zone,
                     config.Appearance,
                     config.Activation.SiempreEncima,
-                    OnIslandPinChanged);
+                    OnIslandPinChanged,
+                    OnFloatingPositionChanged);
                 _windows[zone.RuntimeId] = win;
             }
             else
@@ -163,7 +164,20 @@ public sealed class IslandCoordinator : IDisposable
                 ? []
                 : FilterMatcher.FilterAndSort(allItems, zone.Config.Contenido);
             win.RenderItems(filtered, _inventory.IconCache);
+            if (!string.Equals(zone.Config.Tipo, "archivos", StringComparison.OrdinalIgnoreCase) &&
+                zone.Config.Presentacion.Modo is "siempre" or "flotante")
+                win.ShowPersistent();
         }
+    }
+
+    private void OnFloatingPositionChanged(string islandId, int x, int y)
+    {
+        AppConfig config = _configService.Current;
+        IslandConfig? island = config.Islands.FirstOrDefault(i => i.Id == islandId);
+        if (island is null) return;
+        island.Presentacion.X = x;
+        island.Presentacion.Y = y;
+        _configService.TrySave(config, out _);
     }
 
     private void RefreshAllIslandContents()

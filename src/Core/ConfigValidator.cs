@@ -83,6 +83,16 @@ public static partial class ConfigValidator
         {
             IslandConfig island = config.Islands[i];
             string prefix = $"islas[{i}]";
+            island.Presentacion ??= new SpecialIslandPresentation();
+            if (!string.Equals(island.Tipo, "archivos", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(island.Tipo, "musica", StringComparison.OrdinalIgnoreCase))
+                errors.Add($"{prefix}.tipo debe ser 'archivos' o 'musica'.");
+            if (island.Presentacion.Modo is not ("borde" or "siempre" or "flotante"))
+                errors.Add($"{prefix}.presentacion.modo debe ser 'borde', 'siempre' o 'flotante'.");
+            if (island.Presentacion.Opacidad is < 0.1 or > 1.0)
+                errors.Add($"{prefix}.presentacion.opacidad debe estar entre 0.1 y 1.0.");
+            if (!string.IsNullOrWhiteSpace(island.Presentacion.ColorFondo) && !IsValidHexColor(island.Presentacion.ColorFondo))
+                errors.Add($"{prefix}.presentacion.colorFondo no es un color hexadecimal válido.");
 
             if (string.IsNullOrWhiteSpace(island.Id))
                 errors.Add($"{prefix}.id no puede estar vacío.");

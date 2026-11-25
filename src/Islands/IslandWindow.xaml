@@ -36,7 +36,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Encabezado de la isla -->
-                <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid Grid.Row="0" Margin="0,0,0,8" MouseLeftButtonDown="OnTitleMouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
