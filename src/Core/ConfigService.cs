@@ -62,6 +62,8 @@ public sealed class ConfigService : IDisposable
             if (result.IsValid && result.Config is not null)
             {
                 LastError = null;
+                if (EnsureDefaultMusicIsland(result.Config))
+                    WriteConfigFile(result.Config);
                 return result.Config;
             }
 
@@ -73,6 +75,14 @@ public sealed class ConfigService : IDisposable
         }
 
         return LoadTemplateOrFallback();
+    }
+
+    private static bool EnsureDefaultMusicIsland(AppConfig config)
+    {
+        if (config.Islands.Any(i => string.Equals(i.Tipo, "musica", StringComparison.OrdinalIgnoreCase)))
+            return false;
+        config.Islands.Add(AppConfig.CreateDefaultMusicIsland());
+        return true;
     }
 
     public static AppConfig LoadTemplateOrFallback()

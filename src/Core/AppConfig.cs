@@ -99,8 +99,28 @@ public sealed class AppConfig
                     Disposicion = "rejilla"
                 },
                 Estilo = new IslandStyleConfig { ColorAcento = "#F9E2AF" }
-            }
+            },
+            CreateDefaultMusicIsland()
         ]
+    };
+
+    public static IslandConfig CreateDefaultMusicIsland() => new()
+    {
+        Id = "musica",
+        Tipo = "musica",
+        Nombre = "Música",
+        Habilitada = true,
+        Borde = "inferior",
+        Monitor = "principal",
+        Tamano = new IslandSizeConfig { AnchoPx = 360, AltoPx = 180, MinAnchoPx = 320, MinAltoPx = 150 },
+        Presentacion = new SpecialIslandPresentation { Modo = "borde", X = 300, Y = 300 },
+        Contenido = new IslandContentConfig
+        {
+            Fuentes = [],
+            Filtros = new IslandFilterConfig { Incluir = [], Excluir = [], Tipos = [] },
+            Disposicion = "lista"
+        },
+        Estilo = new IslandStyleConfig { ColorAcento = "#89DCEB" }
     };
 
     public AppConfig Clone()
