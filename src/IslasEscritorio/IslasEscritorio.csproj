@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <Content Include="..\..\config\config.default.json" Link="config\config.default.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="native\x64\*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
 

@@ -42,6 +42,7 @@ public static partial class ConfigValidator
         config.Global ??= new GlobalConfig();
         config.Activation ??= new ActivationConfig();
         config.Appearance ??= new AppearanceConfig();
+        config.Taskbar ??= new TaskbarConfig();
         config.Appearance.Animacion ??= new AnimationConfig();
         config.Islands ??= [];
 
@@ -62,6 +63,15 @@ public static partial class ConfigValidator
 
         if (!IsValidHexColor(config.Appearance.ColorFondo))
             errors.Add($"apariencia.colorFondo inválido: '{config.Appearance.ColorFondo}'.");
+
+        if (!new[] { "normal", "predeterminado", "clear", "claro", "transparente", "blur", "desenfoque", "acrylic", "acrilico", "opaque", "opaco", "color" }.Contains(config.Taskbar.Estilo, StringComparer.OrdinalIgnoreCase))
+            errors.Add("barraTareas.estilo debe ser normal, clear, blur, acrylic u opaque.");
+        if (!IsValidHexColor(config.Taskbar.Color))
+            errors.Add($"barraTareas.color inválido: '{config.Taskbar.Color}'.");
+        if (!new[] { "centro", "izquierda" }.Contains(config.Taskbar.Alineacion, StringComparer.OrdinalIgnoreCase))
+            errors.Add("barraTareas.alineacion debe ser centro o izquierda.");
+        if (!new[] { "siempre", "lleno", "nunca" }.Contains(config.Taskbar.CombinarBotones, StringComparer.OrdinalIgnoreCase))
+            errors.Add("barraTareas.combinarBotones debe ser siempre, lleno o nunca.");
 
         if (config.Appearance.RadioEsquinasPx is < 0 or > 48)
             errors.Add("apariencia.radioEsquinasPx debe estar entre 0 y 48.");

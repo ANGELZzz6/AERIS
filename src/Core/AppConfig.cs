@@ -17,6 +17,9 @@ public sealed class AppConfig
     [JsonPropertyName("apariencia")]
     public AppearanceConfig Appearance { get; set; } = new();
 
+    [JsonPropertyName("barraTareas")]
+    public TaskbarConfig Taskbar { get; set; } = new();
+
     [JsonPropertyName("islas")]
     public List<IslandConfig> Islands { get; set; } = [];
 
@@ -26,6 +29,7 @@ public sealed class AppConfig
         Global = new GlobalConfig(),
         Activation = new ActivationConfig(),
         Appearance = new AppearanceConfig(),
+        Taskbar = new TaskbarConfig(),
         Islands =
         [
             new IslandConfig
@@ -128,6 +132,24 @@ public sealed class AppConfig
         string json = JsonSerializer.Serialize(this, ConfigSerializerOptions.Default);
         return JsonSerializer.Deserialize<AppConfig>(json, ConfigSerializerOptions.Default)!;
     }
+}
+
+public sealed class TaskbarConfig
+{
+    [JsonPropertyName("habilitada")]
+    public bool Habilitada { get; set; }
+    [JsonPropertyName("estilo")]
+    public string Estilo { get; set; } = "predeterminado";
+    [JsonPropertyName("color")]
+    public string Color { get; set; } = "#202020";
+    [JsonPropertyName("alineacion")]
+    public string Alineacion { get; set; } = "centro";
+    [JsonPropertyName("ocultarEtiquetas")]
+    public bool OcultarEtiquetas { get; set; }
+    [JsonPropertyName("combinarBotones")]
+    public string CombinarBotones { get; set; } = "siempre";
+    [JsonPropertyName("mostrarBorde")]
+    public bool MostrarBorde { get; set; } = false;
 }
 
 public sealed class GlobalConfig

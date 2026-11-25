@@ -129,6 +129,14 @@ public partial class SettingsWindow : Window
             LanguageCombo.SelectedIndex = string.Equals(cfg.Global.Idioma, "en", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             ConfigPathText.Text = $"Archivo activo: {_configService.ConfigPath}";
 
+            TaskbarEnabledCheck.IsChecked = cfg.Taskbar.Habilitada;
+            TaskbarStyleCombo.SelectedValue = cfg.Taskbar.Estilo;
+            TaskbarColorBox.Text = cfg.Taskbar.Color;
+            TaskbarAlignmentCombo.SelectedValue = cfg.Taskbar.Alineacion;
+            TaskbarLabelsCheck.IsChecked = cfg.Taskbar.OcultarEtiquetas;
+            TaskbarBorderCheck.IsChecked = cfg.Taskbar.MostrarBorde;
+            TaskbarCombineCombo.SelectedValue = cfg.Taskbar.CombinarBotones;
+
             ThemeCombo.SelectedItem = cfg.Appearance.Tema;
             BgColorBox.Text = cfg.Appearance.ColorFondo;
             OpacitySlider.Value = cfg.Appearance.Opacidad;
@@ -447,6 +455,15 @@ public partial class SettingsWindow : Window
         _workingConfig.Global.AtajoPausar = ShortcutPauseBox.Text.Trim();
         _workingConfig.Global.AtajoAlternar = ShortcutToggleBox.Text.Trim();
         _workingConfig.Global.AtajoAjustes = ShortcutSettingsBox.Text.Trim();
+
+        string estiloTaskbar = TaskbarStyleCombo.SelectedValue as string ?? "predeterminado";
+        _workingConfig.Taskbar.Estilo = estiloTaskbar;
+        _workingConfig.Taskbar.Habilitada = TaskbarEnabledCheck.IsChecked == true || !string.Equals(estiloTaskbar, "predeterminado", StringComparison.OrdinalIgnoreCase);
+        _workingConfig.Taskbar.Color = TaskbarColorBox.Text.Trim();
+        _workingConfig.Taskbar.Alineacion = TaskbarAlignmentCombo.SelectedValue as string ?? "centro";
+        _workingConfig.Taskbar.OcultarEtiquetas = TaskbarLabelsCheck.IsChecked == true;
+        _workingConfig.Taskbar.MostrarBorde = TaskbarBorderCheck.IsChecked == true;
+        _workingConfig.Taskbar.CombinarBotones = TaskbarCombineCombo.SelectedValue as string ?? "siempre";
 
         if (int.TryParse(AnimDurationBox.Text, out int animMs))
             _workingConfig.Appearance.Animacion.DuracionMs = animMs;

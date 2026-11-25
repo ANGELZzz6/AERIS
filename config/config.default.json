@@ -34,6 +34,14 @@
       "easing": "easeOutCubic"
     }
   },
+  "barraTareas": {
+    "habilitada": false,
+    "estilo": "predeterminado",
+    "color": "#202020",
+    "alineacion": "centro",
+    "ocultarEtiquetas": false,
+    "combinarBotones": "siempre"
+  },
   "islas": [
     {
       "id": "izquierda",

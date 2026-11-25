@@ -290,6 +290,39 @@
                 </StackPanel>
             </TabItem>
 
+            <TabItem Header="Barra de tareas">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="22">
+                    <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+                        <TextBlock Text="Personaliza la barra de tareas de Windows" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="Personaliza el aspecto de la barra de tareas de Windows mediante los mismos mecanismos nativos de Win32 (SetWindowCompositionAttribute / DWM) que utiliza TranslucentTB. Soporta transparencia, acrílico, desenfoque y color personalizado." TextWrapping="Wrap" Opacity="0.75" Margin="0,0,0,14"/>
+                        <CheckBox x:Name="TaskbarEnabledCheck" Content="Aplicar personalización de la barra de tareas"/>
+                        <TextBlock Text="Fondo:" Margin="0,8,0,3"/>
+                        <ComboBox x:Name="TaskbarStyleCombo" Width="260" HorizontalAlignment="Left" SelectedValuePath="Tag" Margin="0,0,0,10">
+                            <ComboBoxItem Content="Normal / Predeterminado" Tag="normal"/>
+                            <ComboBoxItem Content="Claro (Clear / 100% transparente)" Tag="clear"/>
+                            <ComboBoxItem Content="Desenfoque (Blur)" Tag="blur"/>
+                            <ComboBoxItem Content="Acrílico (Acrylic)" Tag="acrylic"/>
+                            <ComboBoxItem Content="Opaco / Color (Opaque)" Tag="opaque"/>
+                        </ComboBox>
+                        <TextBlock Text="Color (#RRGGBB):"/>
+                        <TextBox x:Name="TaskbarColorBox" Width="150" HorizontalAlignment="Left" Margin="0,4,0,10" ToolTip="Ejemplo: #202020"/>
+                        <TextBlock Text="Alineación de iconos:"/>
+                        <ComboBox x:Name="TaskbarAlignmentCombo" Width="260" HorizontalAlignment="Left" SelectedValuePath="Tag" Margin="0,4,0,10">
+                            <ComboBoxItem Content="Centrados" Tag="centro"/>
+                            <ComboBoxItem Content="A la izquierda" Tag="izquierda"/>
+                        </ComboBox>
+                        <CheckBox x:Name="TaskbarLabelsCheck" Content="Ocultar etiquetas de botones (Windows 11)" Margin="0,0,0,6"/>
+                        <CheckBox x:Name="TaskbarBorderCheck" Content="Mostrar línea / borde superior de la barra (Show Line)" Margin="0,0,0,10"/>
+                        <TextBlock Text="Combinar botones y ocultar etiquetas:" Margin="0,8,0,3"/>
+                        <ComboBox x:Name="TaskbarCombineCombo" Width="300" HorizontalAlignment="Left" SelectedValuePath="Tag">
+                            <ComboBoxItem Content="Siempre" Tag="siempre"/>
+                            <ComboBoxItem Content="Cuando la barra esté llena" Tag="lleno"/>
+                            <ComboBoxItem Content="Nunca" Tag="nunca"/>
+                        </ComboBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- 3. APARIENCIA -->
             <TabItem Header="Apariencia">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18">

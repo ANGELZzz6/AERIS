@@ -18,6 +18,7 @@ public partial class App : Application
     private IslandCoordinator? _coordinator;
     private TrayIconService? _tray;
     private SettingsWindow? _settingsWindow;
+    private TaskbarCustomizationService? _taskbarService;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -27,6 +28,9 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
 
         _configService = new ConfigService();
+        _taskbarService = new TaskbarCustomizationService();
+        _taskbarService.Apply(_configService.Current.Taskbar);
+        _configService.ConfigChanged += cfg => _taskbarService?.Apply(cfg.Taskbar);
         _desktopController = new DesktopIconController();
         _inventory = new DesktopInventory();
         _coordinator = new IslandCoordinator(_configService, _desktopController, _inventory, Dispatcher);
@@ -68,6 +72,7 @@ public partial class App : Application
     {
         _settingsWindow?.Close();
         _tray?.Dispose();
+        _taskbarService?.Dispose();
         _coordinator?.Dispose();
         Shutdown(0);
     }
@@ -86,6 +91,7 @@ public partial class App : Application
     {
         _tray?.Dispose();
         _coordinator?.Dispose();
+        _taskbarService?.Dispose();
         base.OnExit(e);
     }
 }

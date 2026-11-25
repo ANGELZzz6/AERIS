@@ -20,6 +20,7 @@ AERIS es una utilidad ligera para Windows que oculta los iconos nativos del escr
 - Personaliza tema, color de fondo y texto, transparencia, desenfoque, esquinas, sombra y desplazamiento.
 - Vigila los cambios del escritorio y actualiza el inventario.
 - Incluye bandeja del sistema, atajos, pausa y restauración de emergencia.
+- Permite personalizar color/transparencia y alineación de la barra de tareas de Windows.
 - Funciona sin conexiones de red.
 
 ## Requisitos
@@ -58,7 +59,7 @@ También puedes elegir **Restaurar escritorio** o **Salir** en el menú de la ba
 
 En **Ajustes → Asignaciones**, elige una isla. La lista refleja inicialmente los elementos que coinciden con sus filtros. Arrastra elementos entre las listas para organizarlos; pulsa **Aplicar** para guardar. Las asignaciones explícitas prevalecen sobre los filtros automáticos de esa isla.
 
-En **Ajustes → Apariencia** puedes modificar el fondo, opacidad, desenfoque, modo vidrio, esquinas, color del texto y barra de desplazamiento.
+En **Ajustes → Apariencia** puedes modificar el fondo, opacidad, desenfoque, modo vidrio, esquinas, color del texto y barra de desplazamiento. **Ajustes → Barra de tareas** permite activar transparencia o un color, cambiar la alineación y ajustar etiquetas/agrupación de botones. Al cerrar AERIS se restauran los valores que estaban antes de aplicar la personalización; algunos cambios pueden requerir reiniciar el Explorador.
 
 ## Configuración
 
