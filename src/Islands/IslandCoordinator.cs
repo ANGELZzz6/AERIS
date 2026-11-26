@@ -105,7 +105,7 @@ public sealed class IslandCoordinator : IDisposable
     }
 
     public IReadOnlyList<DesktopItem> GetFilteredItemsForIsland(IslandConfig island) =>
-        string.Equals(island.Tipo, "musica", StringComparison.OrdinalIgnoreCase)
+        !string.Equals(island.Tipo, "archivos", StringComparison.OrdinalIgnoreCase)
             ? []
             : FilterMatcher.FilterAndSort(_inventory.GetItemsSnapshot(), island.Contenido);
 
@@ -152,7 +152,8 @@ public sealed class IslandCoordinator : IDisposable
                     config.Appearance,
                     config.Activation.SiempreEncima,
                     OnIslandPinChanged,
-                    OnFloatingPositionChanged);
+                    OnFloatingPositionChanged,
+                    OnNoteChanged);
                 _windows[zone.RuntimeId] = win;
             }
             else
@@ -160,7 +161,7 @@ public sealed class IslandCoordinator : IDisposable
                 win.UpdateConfiguration(zone, config.Appearance, config.Activation.SiempreEncima);
             }
 
-            IReadOnlyList<DesktopItem> filtered = string.Equals(zone.Config.Tipo, "musica", StringComparison.OrdinalIgnoreCase)
+            IReadOnlyList<DesktopItem> filtered = !string.Equals(zone.Config.Tipo, "archivos", StringComparison.OrdinalIgnoreCase)
                 ? []
                 : FilterMatcher.FilterAndSort(allItems, zone.Config.Contenido);
             win.RenderItems(filtered, _inventory.IconCache);
@@ -180,6 +181,15 @@ public sealed class IslandCoordinator : IDisposable
         _configService.TrySave(config, out _);
     }
 
+    private void OnNoteChanged(string islandId, string text)
+    {
+        AppConfig config = _configService.Current;
+        IslandConfig? island = config.Islands.FirstOrDefault(i => i.Id == islandId);
+        if (island is null) return;
+        island.Presentacion.TextoNota = text;
+        _configService.TrySave(config, out _);
+    }
+
     private void RefreshAllIslandContents()
     {
         IReadOnlyList<DesktopItem> allItems = _inventory.GetItemsSnapshot();
@@ -187,7 +197,7 @@ public sealed class IslandCoordinator : IDisposable
         {
             if (_windows.TryGetValue(zone.RuntimeId, out IslandWindow? win))
             {
-                IReadOnlyList<DesktopItem> filtered = string.Equals(zone.Config.Tipo, "musica", StringComparison.OrdinalIgnoreCase)
+                IReadOnlyList<DesktopItem> filtered = !string.Equals(zone.Config.Tipo, "archivos", StringComparison.OrdinalIgnoreCase)
                     ? []
                     : FilterMatcher.FilterAndSort(allItems, zone.Config.Contenido);
                 win.RenderItems(filtered, _inventory.IconCache);
@@ -205,7 +215,8 @@ public sealed class IslandCoordinator : IDisposable
                 point,
                 DateTime.UtcNow,
                 CanActivateZone,
-                GetOpenWindowBounds);
+                GetOpenWindowBounds,
+                GetEffectiveActivationDelay);
 
             ApplyTransitions(transitions);
             ScheduleNextTimerIfNeeded();
@@ -222,7 +233,8 @@ public sealed class IslandCoordinator : IDisposable
             latest,
             DateTime.UtcNow,
             CanActivateZone,
-            GetOpenWindowBounds);
+            GetOpenWindowBounds,
+            GetEffectiveActivationDelay);
 
         ApplyTransitions(transitions);
         ScheduleNextTimerIfNeeded();
@@ -244,6 +256,23 @@ public sealed class IslandCoordinator : IDisposable
         _oneShotTimer.Start();
     }
 
+    private int GetEffectiveActivationDelay(ResolvedIslandZone zone)
+    {
+        ActivationConfig act = _configService.Current.Activation;
+        int baseDelay = act.RetardoAperturaMs;
+        bool isSideOrEdge = zone.Edge is IslandEdge.Left or IslandEdge.Right or IslandEdge.Top or IslandEdge.Bottom or IslandEdge.TopLeft or IslandEdge.TopRight or IslandEdge.BottomLeft or IslandEdge.BottomRight;
+
+        if (isSideOrEdge && MonitorHelper.IsMaximizedWindowOnMonitor(zone.Monitor.Bounds))
+        {
+            string mode = act.ComportamientoMaximizada?.ToLowerInvariant() ?? "desactivar";
+            if (mode == "retardo")
+            {
+                return baseDelay + act.RetardoMaximizadaMs;
+            }
+        }
+        return baseDelay;
+    }
+
     private bool CanActivateZone(ResolvedIslandZone zone)
     {
         ActivationConfig act = _configService.Current.Activation;
@@ -257,6 +286,16 @@ public sealed class IslandCoordinator : IDisposable
                 : IntPtr.Zero;
             if (MonitorHelper.IsFullscreenWindowOnMonitor(zone.Monitor.Bounds, ownHandle))
                 return false;
+        }
+
+        bool isSideOrEdge = zone.Edge is IslandEdge.Left or IslandEdge.Right or IslandEdge.Top or IslandEdge.Bottom or IslandEdge.TopLeft or IslandEdge.TopRight or IslandEdge.BottomLeft or IslandEdge.BottomRight;
+        if (isSideOrEdge && MonitorHelper.IsMaximizedWindowOnMonitor(zone.Monitor.Bounds))
+        {
+            string mode = act.ComportamientoMaximizada?.ToLowerInvariant() ?? "desactivar";
+            if (mode == "desactivar")
+            {
+                return false;
+            }
         }
 
         return true;

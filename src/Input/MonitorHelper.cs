@@ -101,6 +101,47 @@ public static class MonitorHelper
                rect.Bottom >= monitorBounds.Bottom - 2;
     }
 
+    public static bool IsMaximizedWindowOnMonitor(ScreenRect monitorBounds)
+    {
+        IntPtr fg = GetForegroundWindow();
+        if (fg == IntPtr.Zero) return false;
+
+        var classBuf = new char[64];
+        int len = GetClassName(fg, classBuf, classBuf.Length);
+        if (len > 0)
+        {
+            string cls = new(classBuf, 0, len);
+            if (cls is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd")
+                return false;
+        }
+
+        GetWindowThreadProcessId(fg, out uint pid);
+        if (pid == Environment.ProcessId)
+            return false;
+
+        if (IsZoomed(fg))
+        {
+            if (!GetWindowRect(fg, out Rect rect))
+                return true;
+
+            int intersectLeft = Math.Max(rect.Left, monitorBounds.Left);
+            int intersectTop = Math.Max(rect.Top, monitorBounds.Top);
+            int intersectRight = Math.Min(rect.Right, monitorBounds.Right);
+            int intersectBottom = Math.Min(rect.Bottom, monitorBounds.Bottom);
+
+            if (intersectRight > intersectLeft && intersectBottom > intersectTop)
+            {
+                long intersectArea = (long)(intersectRight - intersectLeft) * (intersectBottom - intersectTop);
+                long monitorArea = (long)monitorBounds.Width * monitorBounds.Height;
+                return intersectArea > (monitorArea / 3);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public static bool IsMouseButtonPressed()
     {
         const int vkLButton = 0x01;

@@ -58,6 +58,9 @@ public static partial class ConfigValidator
         if (!TryParseCornerBehavior(config.Activation.ComportamientoEsquinas, out _))
             errors.Add($"activacion.comportamientoEsquinas inválido: '{config.Activation.ComportamientoEsquinas}'.");
 
+        if (!new[] { "desactivar", "retardo", "normal" }.Contains(config.Activation.ComportamientoMaximizada, StringComparer.OrdinalIgnoreCase))
+            errors.Add("activacion.comportamientoMaximizada debe ser 'desactivar', 'retardo' o 'normal'.");
+
         if (config.Appearance.Opacidad is < 0.1 or > 1.0)
             errors.Add("apariencia.opacidad debe estar entre 0.1 y 1.0.");
 
@@ -95,8 +98,11 @@ public static partial class ConfigValidator
             string prefix = $"islas[{i}]";
             island.Presentacion ??= new SpecialIslandPresentation();
             if (!string.Equals(island.Tipo, "archivos", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(island.Tipo, "musica", StringComparison.OrdinalIgnoreCase))
-                errors.Add($"{prefix}.tipo debe ser 'archivos' o 'musica'.");
+                !string.Equals(island.Tipo, "musica", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(island.Tipo, "reloj", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(island.Tipo, "sistema", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(island.Tipo, "notas", StringComparison.OrdinalIgnoreCase))
+                errors.Add($"{prefix}.tipo debe ser 'archivos', 'musica', 'reloj', 'sistema' o 'notas'.");
             if (island.Presentacion.Modo is not ("borde" or "siempre" or "flotante"))
                 errors.Add($"{prefix}.presentacion.modo debe ser 'borde', 'siempre' o 'flotante'.");
             if (island.Presentacion.Opacidad is < 0.1 or > 1.0)

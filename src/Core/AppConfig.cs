@@ -112,12 +112,22 @@ public sealed class AppConfig
     {
         Id = "musica",
         Tipo = "musica",
-        Nombre = "Música",
+        Nombre = "Música y Reproductor",
         Habilitada = true,
         Borde = "inferior",
         Monitor = "principal",
-        Tamano = new IslandSizeConfig { AnchoPx = 360, AltoPx = 180, MinAnchoPx = 320, MinAltoPx = 150 },
-        Presentacion = new SpecialIslandPresentation { Modo = "borde", X = 300, Y = 300 },
+        Tamano = new IslandSizeConfig { AnchoPx = 400, AltoPx = 160, MinAnchoPx = 320, MinAltoPx = 140 },
+        Presentacion = new SpecialIslandPresentation
+        {
+            Modo = "borde",
+            X = 300,
+            Y = 300,
+            MostrarPortada = true,
+            EstiloPortada = "redondeada",
+            EstiloBotones = "moderno",
+            MostrarAppOrigen = true,
+            MostrarEcualizador = true
+        },
         Contenido = new IslandContentConfig
         {
             Fuentes = [],
@@ -125,6 +135,48 @@ public sealed class AppConfig
             Disposicion = "lista"
         },
         Estilo = new IslandStyleConfig { ColorAcento = "#89DCEB" }
+    };
+
+    public static IslandConfig CreateDefaultClockIsland() => new()
+    {
+        Id = "reloj",
+        Tipo = "reloj",
+        Nombre = "Reloj y Fecha",
+        Habilitada = true,
+        Borde = "superior",
+        Monitor = "principal",
+        Tamano = new IslandSizeConfig { AnchoPx = 280, AltoPx = 130, MinAnchoPx = 220, MinAltoPx = 110 },
+        Presentacion = new SpecialIslandPresentation { Modo = "borde", X = 400, Y = 100 },
+        Contenido = new IslandContentConfig(),
+        Estilo = new IslandStyleConfig { ColorAcento = "#F9E2AF" }
+    };
+
+    public static IslandConfig CreateDefaultSystemIsland() => new()
+    {
+        Id = "sistema",
+        Tipo = "sistema",
+        Nombre = "Monitor de Sistema",
+        Habilitada = true,
+        Borde = "derecho",
+        Monitor = "principal",
+        Tamano = new IslandSizeConfig { AnchoPx = 260, AltoPx = 170, MinAnchoPx = 200, MinAltoPx = 140 },
+        Presentacion = new SpecialIslandPresentation { Modo = "borde", X = 500, Y = 200 },
+        Contenido = new IslandContentConfig(),
+        Estilo = new IslandStyleConfig { ColorAcento = "#F38BA8" }
+    };
+
+    public static IslandConfig CreateDefaultNotesIsland() => new()
+    {
+        Id = "notas",
+        Tipo = "notas",
+        Nombre = "Notas Rápidas",
+        Habilitada = true,
+        Borde = "izquierdo",
+        Monitor = "principal",
+        Tamano = new IslandSizeConfig { AnchoPx = 280, AltoPx = 200, MinAnchoPx = 220, MinAltoPx = 150 },
+        Presentacion = new SpecialIslandPresentation { Modo = "borde", X = 200, Y = 200, TextoNota = "¡Escribe tus notas rápidas aquí!" },
+        Contenido = new IslandContentConfig(),
+        Estilo = new IslandStyleConfig { ColorAcento = "#A6E3A1" }
     };
 
     public AppConfig Clone()
@@ -201,6 +253,12 @@ public sealed class ActivationConfig
 
     [JsonPropertyName("siempreEncima")]
     public bool SiempreEncima { get; set; } = true;
+
+    [JsonPropertyName("comportamientoMaximizada")]
+    public string ComportamientoMaximizada { get; set; } = "desactivar"; // "desactivar", "retardo", "normal"
+
+    [JsonPropertyName("retardoMaximizadaMs")]
+    public int RetardoMaximizadaMs { get; set; } = 400;
 }
 
 public sealed class AppearanceConfig
@@ -301,6 +359,38 @@ public sealed class SpecialIslandPresentation
     public string? ColorFondo { get; set; }
     [JsonPropertyName("opacidad")]
     public double? Opacidad { get; set; }
+
+    // Música
+    [JsonPropertyName("mostrarPortada")]
+    public bool MostrarPortada { get; set; } = true;
+    [JsonPropertyName("estiloPortada")]
+    public string EstiloPortada { get; set; } = "redondeada"; // "redondeada", "cuadrada", "circular", "vinilo"
+    [JsonPropertyName("estiloBotones")]
+    public string EstiloBotones { get; set; } = "moderno"; // "moderno", "pastilla", "minimalista"
+    [JsonPropertyName("mostrarAppOrigen")]
+    public bool MostrarAppOrigen { get; set; } = true;
+    [JsonPropertyName("mostrarEcualizador")]
+    public bool MostrarEcualizador { get; set; } = true;
+
+    // Reloj
+    [JsonPropertyName("formatoHora24")]
+    public bool FormatoHora24 { get; set; } = true;
+    [JsonPropertyName("mostrarSegundos")]
+    public bool MostrarSegundos { get; set; } = true;
+    [JsonPropertyName("mostrarFecha")]
+    public bool MostrarFecha { get; set; } = true;
+
+    // Sistema
+    [JsonPropertyName("mostrarRam")]
+    public bool MostrarRam { get; set; } = true;
+    [JsonPropertyName("mostrarDisco")]
+    public bool MostrarDisco { get; set; } = true;
+    [JsonPropertyName("mostrarCpu")]
+    public bool MostrarCpu { get; set; } = true;
+
+    // Notas
+    [JsonPropertyName("textoNota")]
+    public string TextoNota { get; set; } = "";
 }
 
 public sealed class IslandPositionConfig

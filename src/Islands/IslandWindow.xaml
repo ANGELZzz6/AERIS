@@ -76,15 +76,115 @@
                               PanningMode="VerticalOnly">
                     <StackPanel x:Name="ContentHost"/>
                 </ScrollViewer>
-                <StackPanel x:Name="MusicHost" Grid.Row="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
-                    <TextBlock x:Name="MusicTrackText" Text="No hay música activa" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,4"/>
-                    <TextBlock x:Name="MusicArtistText" Text="Inicia la reproducción en una app compatible" Opacity="0.72" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,12"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button Content="|◀" Padding="12,6" Margin="3" Click="OnPreviousTrackClick"/>
-                        <Button x:Name="MusicPlayPauseButton" Content="▶ / ⏸" Padding="12,6" Margin="3" Click="OnPlayPauseClick"/>
-                        <Button Content="▶|" Padding="12,6" Margin="3" Click="OnNextTrackClick"/>
+
+                <!-- Host de Música -->
+                <Grid x:Name="MusicHost" Grid.Row="1" Visibility="Collapsed" Margin="4,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" x:Name="MusicArtColumn"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Portada de la Canción -->
+                    <Border x:Name="MusicArtContainer" Grid.Column="0" Width="100" Height="100" Margin="0,0,12,0" VerticalAlignment="Center" CornerRadius="12" ClipToBounds="True" Background="#232334">
+                        <Grid>
+                            <Image x:Name="MusicCoverImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <Grid x:Name="MusicCoverPlaceholder" Background="#1E1E2E" Visibility="Visible">
+                                <Border x:Name="VinylGrooveBorder" CornerRadius="50" BorderBrush="#1CFFFFFF" BorderThickness="12" Margin="8" Visibility="Collapsed"/>
+                                <TextBlock x:Name="MusicPlaceholderIcon" Text="🎵" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7"/>
+                            </Grid>
+                            <Border x:Name="MusicArtOverlayBorder" BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="12"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Info y Controles -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <!-- Header row: App badge & Ecualizador -->
+                        <DockPanel Margin="0,0,0,4">
+                            <StackPanel x:Name="EqualizerHost" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Height="14" Margin="6,0,0,0">
+                                <Rectangle x:Name="EqBar1" Width="3" Height="8" Fill="#89B4FA" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                                <Rectangle x:Name="EqBar2" Width="3" Height="12" Fill="#89B4FA" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                                <Rectangle x:Name="EqBar3" Width="3" Height="6" Fill="#89B4FA" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                                <Rectangle x:Name="EqBar4" Width="3" Height="10" Fill="#89B4FA" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                            </StackPanel>
+
+                            <Border x:Name="MusicAppBadge" DockPanel.Dock="Left" Background="#2589B4FA" CornerRadius="6" Padding="7,2" HorizontalAlignment="Left">
+                                <TextBlock x:Name="MusicAppText" Text="Multimedia" FontSize="11" FontWeight="Bold" Foreground="#89B4FA"/>
+                            </Border>
+                        </DockPanel>
+
+                        <!-- Pista y Artista -->
+                        <TextBlock x:Name="MusicTrackText" Text="No hay música activa" FontSize="14" FontWeight="Bold" TextTrimming="CharacterEllipsis" Margin="0,0,0,2"/>
+                        <TextBlock x:Name="MusicArtistText" Text="Inicia reproducción en una app compatible" FontSize="12" Opacity="0.75" TextTrimming="CharacterEllipsis" Margin="0,0,0,8"/>
+
+                        <!-- Botones de Control Estilizados -->
+                        <StackPanel x:Name="MusicControlsHost" Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Button x:Name="MusicPrevButton" Content="⏮" Width="38" Height="34" Margin="0,0,6,0" Click="OnPreviousTrackClick" ToolTip="Anterior"/>
+                            <Button x:Name="MusicPlayPauseButton" Content="▶" Width="52" Height="34" Margin="0,0,6,0" Click="OnPlayPauseClick" ToolTip="Reproducir / Pausar"/>
+                            <Button x:Name="MusicNextButton" Content="⏭" Width="38" Height="34" Margin="0,0,6,0" Click="OnNextTrackClick" ToolTip="Siguiente"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
+
+                <!-- Host de Reloj -->
+                <Grid x:Name="ClockHost" Grid.Row="1" Visibility="Collapsed" Margin="8,4">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock x:Name="ClockTimeText" Text="12:00:00" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" FontFamily="Consolas"/>
+                        <TextBlock x:Name="ClockDateText" Text="Lunes, 1 de Enero de 2025" FontSize="13" Opacity="0.8" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Host de Monitor de Sistema -->
+                <Grid x:Name="SystemHost" Grid.Row="1" Visibility="Collapsed" Margin="6,4">
+                    <StackPanel VerticalAlignment="Center">
+                        <!-- RAM -->
+                        <Grid x:Name="RamRowGrid" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="65"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="45"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="RAM" FontSize="12" FontWeight="SemiBold" Grid.Column="0"/>
+                            <ProgressBar x:Name="RamProgressBar" Height="10" Value="45" Maximum="100" Grid.Column="1" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="RamValueText" Text="45%" FontSize="11" TextAlignment="Right" Grid.Column="2"/>
+                        </Grid>
+                        <!-- DISCO -->
+                        <Grid x:Name="DiskRowGrid" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="65"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="45"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Disco C:" FontSize="12" FontWeight="SemiBold" Grid.Column="0"/>
+                            <ProgressBar x:Name="DiskProgressBar" Height="10" Value="60" Maximum="100" Grid.Column="1" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="DiskValueText" Text="60%" FontSize="11" TextAlignment="Right" Grid.Column="2"/>
+                        </Grid>
+                        <!-- CPU -->
+                        <Grid x:Name="CpuRowGrid">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="65"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="45"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="CPU" FontSize="12" FontWeight="SemiBold" Grid.Column="0"/>
+                            <ProgressBar x:Name="CpuProgressBar" Height="10" Value="15" Maximum="100" Grid.Column="1" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="CpuValueText" Text="15%" FontSize="11" TextAlignment="Right" Grid.Column="2"/>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Host de Notas Rápidas -->
+                <Grid x:Name="NotesHost" Grid.Row="1" Visibility="Collapsed" Margin="4">
+                    <TextBox x:Name="NotesTextBox"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             Background="#1AFFFFFF"
+                             Foreground="{Binding ElementName=TitleText, Path=Foreground}"
+                             BorderThickness="0"
+                             Padding="8"
+                             FontSize="12"
+                             TextChanged="OnNotesTextChanged"/>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

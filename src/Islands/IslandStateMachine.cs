@@ -24,7 +24,8 @@ public sealed class IslandStateMachine
         bool inActivationZone,
         bool inIslandBounds,
         DateTime nowUtc,
-        Func<bool>? canActivate = null)
+        Func<bool>? canActivate = null,
+        int? dynamicDelayMs = null)
     {
         IslandState before = State;
         bool inside = inActivationZone || inIslandBounds || IsPinnedOpen;
@@ -35,7 +36,8 @@ public sealed class IslandStateMachine
                 if (canActivate is not null && !canActivate())
                     break;
 
-                if (ActivationDelayMs == 0)
+                int effectiveDelay = Math.Max(0, dynamicDelayMs ?? ActivationDelayMs);
+                if (effectiveDelay == 0)
                 {
                     State = IslandState.Open;
                     NextDeadlineUtc = null;
@@ -43,7 +45,7 @@ public sealed class IslandStateMachine
                 else
                 {
                     State = IslandState.Waiting;
-                    NextDeadlineUtc = nowUtc.AddMilliseconds(ActivationDelayMs);
+                    NextDeadlineUtc = nowUtc.AddMilliseconds(effectiveDelay);
                 }
                 break;
 

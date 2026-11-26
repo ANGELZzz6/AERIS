@@ -126,23 +126,25 @@ public sealed class ZoneManager
         ScreenPoint cursor,
         DateTime nowUtc,
         Func<ResolvedIslandZone, bool>? canActivate = null,
-        Func<string, ScreenRect?>? getOpenWindowRect = null)
+        Func<string, ScreenRect?>? getOpenWindowRect = null,
+        Func<ResolvedIslandZone, int>? getEffectiveDelay = null)
     {
         lock (_sync)
         {
             _cursor = cursor;
-            return EvaluateLocked(nowUtc, canActivate, getOpenWindowRect);
+            return EvaluateLocked(nowUtc, canActivate, getOpenWindowRect, getEffectiveDelay);
         }
     }
 
     public IReadOnlyList<IslandStateTransition> Tick(
         DateTime nowUtc,
         Func<ResolvedIslandZone, bool>? canActivate = null,
-        Func<string, ScreenRect?>? getOpenWindowRect = null)
+        Func<string, ScreenRect?>? getOpenWindowRect = null,
+        Func<ResolvedIslandZone, int>? getEffectiveDelay = null)
     {
         lock (_sync)
         {
-            return EvaluateLocked(nowUtc, canActivate, getOpenWindowRect);
+            return EvaluateLocked(nowUtc, canActivate, getOpenWindowRect, getEffectiveDelay);
         }
     }
 
@@ -206,7 +208,8 @@ public sealed class ZoneManager
     private List<IslandStateTransition> EvaluateLocked(
         DateTime nowUtc,
         Func<ResolvedIslandZone, bool>? canActivate,
-        Func<string, ScreenRect?>? getOpenWindowRect)
+        Func<string, ScreenRect?>? getOpenWindowRect,
+        Func<ResolvedIslandZone, int>? getEffectiveDelay)
     {
         var transitions = new List<IslandStateTransition>();
         if (_paused) return transitions;
@@ -257,12 +260,14 @@ public sealed class ZoneManager
                 inIsland = islandRect.Contains(_cursor);
             }
 
+            int effectiveDelay = getEffectiveDelay?.Invoke(entry.Zone) ?? entry.Machine.ActivationDelayMs;
             IslandState before = entry.Machine.State;
             bool changed = entry.Machine.Update(
                 inActivation,
                 inIsland,
                 nowUtc,
-                canActivate is null ? null : () => canActivate(entry.Zone));
+                canActivate is null ? null : () => canActivate(entry.Zone),
+                effectiveDelay);
 
             if (changed)
                 transitions.Add(new(entry.Zone, before, entry.Machine.State));

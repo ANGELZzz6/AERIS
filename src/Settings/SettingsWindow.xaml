@@ -166,7 +166,10 @@
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Función:"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" x:Name="IslandTypeCombo" Margin="0,3" SelectionChanged="OnIslandFieldChanged">
                                     <ComboBoxItem Content="Archivos y carpetas" Tag="archivos"/>
-                                    <ComboBoxItem Content="Música" Tag="musica"/>
+                                    <ComboBoxItem Content="Música y reproductor" Tag="musica"/>
+                                    <ComboBoxItem Content="Reloj y fecha" Tag="reloj"/>
+                                    <ComboBoxItem Content="Monitor de sistema" Tag="sistema"/>
+                                    <ComboBoxItem Content="Notas rápidas" Tag="notas"/>
                                 </ComboBox>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Nombre:"/>
                                 <TextBox Grid.Row="1" Grid.Column="1" x:Name="IslandNameBox" Margin="0,3" TextChanged="OnIslandFieldChanged"/>
@@ -266,28 +269,128 @@
             </TabItem>
 
             <TabItem Header="Música y especiales">
-                <StackPanel Margin="20" MaxWidth="680" HorizontalAlignment="Left">
-                    <TextBlock Text="Comportamiento independiente de las islas especiales" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <TextBlock Text="Estas opciones solo afectan a islas como Música; las islas de archivos conservan sus zonas y ajustes actuales." TextWrapping="Wrap" Opacity="0.75" Margin="0,0,0,14"/>
-                    <TextBlock Text="Isla:"/>
-                    <ComboBox x:Name="SpecialIslandCombo" Width="320" HorizontalAlignment="Left" DisplayMemberPath="Nombre" SelectionChanged="OnSpecialIslandChanged" Margin="0,4,0,12"/>
-                    <TextBlock Text="Despliegue:"/>
-                    <ComboBox x:Name="SpecialModeCombo" Width="320" HorizontalAlignment="Left" SelectedValuePath="Tag" Margin="0,4,0,12">
-                        <ComboBoxItem Content="Activar desde el borde" Tag="borde"/>
-                        <ComboBoxItem Content="Siempre visible" Tag="siempre"/>
-                        <ComboBoxItem Content="Flotante y arrastrable" Tag="flotante"/>
-                    </ComboBox>
-                    <TextBlock Text="Posición flotante (coordenadas de pantalla):"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,12">
-                        <TextBox x:Name="SpecialXBox" Width="100" ToolTip="X" Margin="0,0,8,0"/>
-                        <TextBox x:Name="SpecialYBox" Width="100" ToolTip="Y"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                    <StackPanel MaxWidth="680" HorizontalAlignment="Left">
+                        <TextBlock Text="Personalización de Islas Especiales" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <TextBlock Text="Configura el reproductor de música, la portada de la canción, los botones de control y otras islas inteligentes (reloj, sistema y notas)." TextWrapping="Wrap" Opacity="0.75" Margin="0,0,0,14"/>
+
+                        <!-- Crear rápido islas especiales -->
+                        <TextBlock Text="Crear nueva isla especial:" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <WrapPanel Margin="0,0,0,16">
+                            <Button Content="+ Música" Click="OnAddMusicIslandClick" Margin="0,0,8,6" Background="#243447" BorderBrush="#89DCEB"/>
+                            <Button Content="+ Reloj" Click="OnAddClockIslandClick" Margin="0,0,8,6" Background="#3B3424" BorderBrush="#F9E2AF"/>
+                            <Button Content="+ Monitor Sistema" Click="OnAddSystemIslandClick" Margin="0,0,8,6" Background="#3F242D" BorderBrush="#F38BA8"/>
+                            <Button Content="+ Notas Rápidas" Click="OnAddNotesIslandClick" Margin="0,0,8,6" Background="#223B2A" BorderBrush="#A6E3A1"/>
+                        </WrapPanel>
+
+                        <Separator Background="#313244" Margin="0,0,0,14"/>
+
+                        <TextBlock Text="Seleccionar isla a configurar:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="SpecialIslandCombo" Width="360" HorizontalAlignment="Left" DisplayMemberPath="Nombre" SelectionChanged="OnSpecialIslandChanged" Margin="0,0,0,14"/>
+
+                        <TextBlock Text="Comportamiento y Despliegue:" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Modo de despliegue:"/>
+                            <ComboBox Grid.Row="0" Grid.Column="1" x:Name="SpecialModeCombo" Width="260" HorizontalAlignment="Left" SelectedValuePath="Tag" Margin="0,3">
+                                <ComboBoxItem Content="Activar desde el borde" Tag="borde"/>
+                                <ComboBoxItem Content="Siempre visible" Tag="siempre"/>
+                                <ComboBoxItem Content="Flotante y arrastrable" Tag="flotante"/>
+                            </ComboBox>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Posición flotante (X / Y):"/>
+                            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                                <TextBox x:Name="SpecialXBox" Width="90" ToolTip="X en px" Margin="0,0,8,0"/>
+                                <TextBox x:Name="SpecialYBox" Width="90" ToolTip="Y en px"/>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Color de fondo (#hex):"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" x:Name="SpecialBgBox" Width="190" HorizontalAlignment="Left" Margin="0,3"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Opacidad (0.1 - 1.0):"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" x:Name="SpecialOpacityBox" Width="110" HorizontalAlignment="Left" Margin="0,3"/>
+                        </Grid>
+
+                        <!-- Opciones específicas de Música -->
+                        <Border x:Name="MusicOptionsGroup" Background="#161625" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,10,0,10" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="Ajustes y Personalización del Reproductor de Música" FontWeight="SemiBold" Foreground="#89DCEB" Margin="0,0,0,10"/>
+
+                                <CheckBox x:Name="SpecialShowCoverCheck" Content="Mostrar la portada de la canción (Album Art)" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Estilo de la portada:"/>
+                                    <ComboBox Grid.Row="0" Grid.Column="1" x:Name="SpecialCoverStyleCombo" Width="220" HorizontalAlignment="Left" Margin="0,3" SelectionChanged="OnSpecialFieldChanged">
+                                        <ComboBoxItem Content="Esquinas redondeadas" Tag="redondeada"/>
+                                        <ComboBoxItem Content="Cuadrada" Tag="cuadrada"/>
+                                        <ComboBoxItem Content="Circular" Tag="circular"/>
+                                        <ComboBoxItem Content="Disco de vinilo" Tag="vinilo"/>
+                                    </ComboBox>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Estilo de botones:"/>
+                                    <ComboBox Grid.Row="1" Grid.Column="1" x:Name="SpecialButtonsStyleCombo" Width="220" HorizontalAlignment="Left" Margin="0,3" SelectionChanged="OnSpecialFieldChanged">
+                                        <ComboBoxItem Content="Moderno (Cápsulas)" Tag="moderno"/>
+                                        <ComboBoxItem Content="Pastilla (Borde acento)" Tag="pastilla"/>
+                                        <ComboBoxItem Content="Minimalista" Tag="minimalista"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <CheckBox x:Name="SpecialShowAppCheck" Content="Mostrar la app de origen (ej. Spotify, Edge, Chrome)" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged" Margin="0,8,0,0"/>
+                                <CheckBox x:Name="SpecialShowEqCheck" Content="Mostrar ecualizador gráfico animado al reproducir" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Opciones específicas de Reloj -->
+                        <Border x:Name="ClockOptionsGroup" Background="#161625" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,10,0,10" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="Ajustes de la Isla Reloj y Fecha" FontWeight="SemiBold" Foreground="#F9E2AF" Margin="0,0,0,10"/>
+                                <CheckBox x:Name="SpecialClock24Check" Content="Formato de hora de 24 horas (ej. 14:30 en vez de 02:30 PM)" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+                                <CheckBox x:Name="SpecialClockSecondsCheck" Content="Mostrar segundos en el reloj" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+                                <CheckBox x:Name="SpecialClockDateCheck" Content="Mostrar fecha completa (ej. Lunes, 24 de Mayo)" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Opciones específicas de Monitor de Sistema -->
+                        <Border x:Name="SystemOptionsGroup" Background="#161625" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,10,0,10" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="Ajustes de Monitor de Sistema" FontWeight="SemiBold" Foreground="#F38BA8" Margin="0,0,0,10"/>
+                                <CheckBox x:Name="SpecialSysRamCheck" Content="Mostrar monitor de memoria RAM" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+                                <CheckBox x:Name="SpecialSysDiskCheck" Content="Mostrar monitor de almacenamiento (Disco C:)" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+                                <CheckBox x:Name="SpecialSysCpuCheck" Content="Mostrar monitor de uso de CPU" Checked="OnSpecialFieldChanged" Unchecked="OnSpecialFieldChanged"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Opciones específicas de Notas Rápidas -->
+                        <Border x:Name="NotesOptionsGroup" Background="#161625" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,10,0,10" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="Ajustes de Notas Rápidas" FontWeight="SemiBold" Foreground="#A6E3A1" Margin="0,0,0,10"/>
+                                <TextBlock Text="Contenido de la nota guardada:" Margin="0,0,0,4"/>
+                                <TextBox x:Name="SpecialNotesText" Height="80" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="OnSpecialFieldChanged"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="Tip: En modo flotante puedes arrastrar la isla manteniendo pulsado el clic sobre su encabezado." TextWrapping="Wrap" Opacity="0.7" FontSize="11" Margin="0,6,0,0"/>
                     </StackPanel>
-                    <TextBlock Text="Color de fondo propio (#hex, opcional):"/>
-                    <TextBox x:Name="SpecialBgBox" Width="200" HorizontalAlignment="Left" Margin="0,4,0,12"/>
-                    <TextBlock Text="Opacidad propia (0.1–1, opcional):"/>
-                    <TextBox x:Name="SpecialOpacityBox" Width="120" HorizontalAlignment="Left" Margin="0,4,0,12"/>
-                    <TextBlock Text="Con el modo flotante, arrastra la isla desde su encabezado. La posición se guarda automáticamente." TextWrapping="Wrap" Opacity="0.75"/>
-                </StackPanel>
+                </ScrollViewer>
             </TabItem>
 
             <TabItem Header="Barra de tareas">
@@ -429,6 +532,8 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Retardo de apertura (ms):"/>
@@ -445,6 +550,16 @@
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="Comportamiento en esquinas:"/>
                             <ComboBox Grid.Row="4" Grid.Column="1" x:Name="CornerBehaviorCombo" Margin="0,5"/>
+
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Ventana maximizada (ej. navegador):"/>
+                            <ComboBox Grid.Row="5" Grid.Column="1" x:Name="MaximizedBehaviorCombo" SelectedValuePath="Tag" Margin="0,5">
+                                <ComboBoxItem Content="Desactivar islas laterales" Tag="desactivar"/>
+                                <ComboBoxItem Content="Añadir retardo extra" Tag="retardo"/>
+                                <ComboBoxItem Content="Comportamiento normal" Tag="normal"/>
+                            </ComboBox>
+
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Retardo extra maximizada (ms):"/>
+                            <TextBox Grid.Row="6" Grid.Column="1" x:Name="MaximizedDelayBox" Margin="0,5"/>
                         </Grid>
 
                         <CheckBox x:Name="DisableFullscreenCheck" Content="Desactivar zonas cuando haya una aplicación en pantalla completa" Margin="0,12,0,4"/>

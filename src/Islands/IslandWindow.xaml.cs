@@ -11,6 +11,7 @@ using IslasEscritorio.Core;
 using IslasEscritorio.Input;
 using IslasEscritorio.Inventory;
 using Button = System.Windows.Controls.Button;
+using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
 using DataObject = System.Windows.DataObject;
@@ -50,8 +51,11 @@ public partial class IslandWindow : Window
     private Point? _dragStartPoint;
     private DesktopItem? _dragCandidateItem;
     private readonly DispatcherTimer _mediaRefreshTimer = new() { Interval = TimeSpan.FromSeconds(2) };
+    private readonly DispatcherTimer _specialTimer = new() { Interval = TimeSpan.FromSeconds(1) };
     private GlobalSystemMediaTransportControlsSessionManager? _mediaManager;
     private GlobalSystemMediaTransportControlsSession? _currentMediaSession;
+    private bool _suppressNotesSave;
+    private readonly Action<string, string>? _onNoteChanged;
 
     public string RuntimeId => _zone.RuntimeId;
     public ScreenRect CurrentPhysicalBounds { get; private set; }
@@ -61,7 +65,8 @@ public partial class IslandWindow : Window
         AppearanceConfig appearance,
         bool topmost,
         Action<string, bool>? onPinChanged = null,
-        Action<string, int, int>? onFloatingPositionChanged = null)
+        Action<string, int, int>? onFloatingPositionChanged = null,
+        Action<string, string>? onNoteChanged = null)
     {
         InitializeComponent();
         _zone = zone;
@@ -69,10 +74,12 @@ public partial class IslandWindow : Window
         _topmost = topmost;
         _onPinChanged = onPinChanged;
         _onFloatingPositionChanged = onFloatingPositionChanged;
+        _onNoteChanged = onNoteChanged;
         CurrentPhysicalBounds = zone.TargetWindowRect;
 
         SourceInitialized += OnSourceInitialized;
         _mediaRefreshTimer.Tick += async (_, _) => await RefreshMediaAsync();
+        _specialTimer.Tick += (_, _) => RefreshSpecialIsland();
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
@@ -100,18 +107,56 @@ public partial class IslandWindow : Window
 
     public void RenderItems(IReadOnlyList<DesktopItem> items, IconCache iconCache)
     {
-        bool isMusicIsland = string.Equals(_zone.Config.Tipo, "musica", StringComparison.OrdinalIgnoreCase);
-        ItemsScrollViewer.Visibility = isMusicIsland ? Visibility.Collapsed : Visibility.Visible;
-        MusicHost.Visibility = isMusicIsland ? Visibility.Visible : Visibility.Collapsed;
-        if (isMusicIsland)
+        string type = _zone.Config.Tipo.ToLowerInvariant();
+        bool isFiles = string.Equals(type, "archivos", StringComparison.OrdinalIgnoreCase);
+
+        ItemsScrollViewer.Visibility = isFiles ? Visibility.Visible : Visibility.Collapsed;
+        MusicHost.Visibility = string.Equals(type, "musica", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+        ClockHost.Visibility = string.Equals(type, "reloj", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+        SystemHost.Visibility = string.Equals(type, "sistema", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+        NotesHost.Visibility = string.Equals(type, "notas", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+
+        TitleText.Text = string.IsNullOrWhiteSpace(_zone.Config.Nombre) ? _zone.Config.Id : _zone.Config.Nombre;
+        CountText.Text = items.Count.ToString();
+        CountBadge.Visibility = isFiles ? Visibility.Visible : Visibility.Collapsed;
+
+        if (string.Equals(type, "musica", StringComparison.OrdinalIgnoreCase))
         {
+            _specialTimer.Stop();
             _mediaRefreshTimer.Start();
             _ = RefreshMediaAsync();
             return;
         }
+
+        if (string.Equals(type, "reloj", StringComparison.OrdinalIgnoreCase))
+        {
+            _mediaRefreshTimer.Stop();
+            _specialTimer.Start();
+            RefreshClock();
+            return;
+        }
+
+        if (string.Equals(type, "sistema", StringComparison.OrdinalIgnoreCase))
+        {
+            _mediaRefreshTimer.Stop();
+            _specialTimer.Start();
+            RefreshSystem();
+            return;
+        }
+
+        if (string.Equals(type, "notas", StringComparison.OrdinalIgnoreCase))
+        {
+            _mediaRefreshTimer.Stop();
+            _specialTimer.Stop();
+            _suppressNotesSave = true;
+            NotesTextBox.Text = _zone.Config.Presentacion.TextoNota ?? string.Empty;
+            _suppressNotesSave = false;
+            return;
+        }
+
         _mediaRefreshTimer.Stop();
-        TitleText.Text = string.IsNullOrWhiteSpace(_zone.Config.Nombre) ? _zone.Config.Id : _zone.Config.Nombre;
-        CountText.Text = items.Count.ToString();
+        _specialTimer.Stop();
+
         ContentHost.Children.Clear();
 
         if (items.Count == 0)
@@ -170,6 +215,13 @@ public partial class IslandWindow : Window
         }
     }
 
+    private void RefreshSpecialIsland()
+    {
+        string type = _zone.Config.Tipo.ToLowerInvariant();
+        if (type == "reloj") RefreshClock();
+        else if (type == "sistema") RefreshSystem();
+    }
+
     private async Task RefreshMediaAsync()
     {
         try
@@ -179,21 +231,298 @@ public partial class IslandWindow : Window
             if (_currentMediaSession is null)
             {
                 MusicTrackText.Text = "No hay música activa";
-                MusicArtistText.Text = "Inicia una reproducción en Spotify, el navegador u otra app multimedia";
+                MusicArtistText.Text = "Inicia reproducción en Spotify o navegador";
+                MusicAppBadge.Visibility = Visibility.Collapsed;
+                EqualizerHost.Visibility = Visibility.Collapsed;
+                MusicCoverImage.Source = null;
+                MusicCoverImage.Visibility = Visibility.Collapsed;
+                MusicCoverPlaceholder.Visibility = Visibility.Visible;
+                ApplyButtonStyles(_zone.Config.Presentacion.EstiloBotones);
                 return;
             }
 
             var properties = await _currentMediaSession.TryGetMediaPropertiesAsync();
             MusicTrackText.Text = string.IsNullOrWhiteSpace(properties.Title) ? "Reproducción activa" : properties.Title;
-            MusicArtistText.Text = string.IsNullOrWhiteSpace(properties.Artist) ? _currentMediaSession.SourceAppUserModelId : properties.Artist;
+            MusicArtistText.Text = string.IsNullOrWhiteSpace(properties.Artist) ? GetFriendlyAppName(_currentMediaSession.SourceAppUserModelId) : properties.Artist;
+
+            string appName = GetFriendlyAppName(_currentMediaSession.SourceAppUserModelId);
+            MusicAppText.Text = appName;
+            MusicAppBadge.Visibility = _zone.Config.Presentacion.MostrarAppOrigen ? Visibility.Visible : Visibility.Collapsed;
+
             var state = _currentMediaSession.GetPlaybackInfo().PlaybackStatus;
-            MusicPlayPauseButton.Content = state == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing ? "⏸ Pausar" : "▶ Reproducir";
+            bool isPlaying = state == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+            MusicPlayPauseButton.Content = isPlaying ? "⏸" : "▶";
+
+            if (isPlaying && _zone.Config.Presentacion.MostrarEcualizador)
+            {
+                EqualizerHost.Visibility = Visibility.Visible;
+                Random rng = Random.Shared;
+                EqBar1.Height = rng.Next(4, 15);
+                EqBar2.Height = rng.Next(6, 18);
+                EqBar3.Height = rng.Next(3, 14);
+                EqBar4.Height = rng.Next(5, 16);
+            }
+            else
+            {
+                EqualizerHost.Visibility = Visibility.Collapsed;
+            }
+
+            bool showCover = _zone.Config.Presentacion.MostrarPortada;
+            MusicArtColumn.Width = showCover ? GridLength.Auto : new GridLength(0);
+            MusicArtContainer.Visibility = showCover ? Visibility.Visible : Visibility.Collapsed;
+
+            if (showCover)
+            {
+                ApplyCoverStyle(_zone.Config.Presentacion.EstiloPortada);
+                if (properties.Thumbnail is { } streamRef)
+                {
+                    try
+                    {
+                        using var ras = await streamRef.OpenReadAsync();
+                        using var stream = System.IO.WindowsRuntimeStreamExtensions.AsStreamForRead(ras);
+                        using var ms = new System.IO.MemoryStream();
+                        await stream.CopyToAsync(ms);
+                        ms.Position = 0;
+
+                        BitmapImage bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmap.StreamSource = ms;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+
+                        MusicCoverImage.Source = bitmap;
+                        MusicCoverImage.Visibility = Visibility.Visible;
+                        MusicCoverPlaceholder.Visibility = Visibility.Collapsed;
+                    }
+                    catch
+                    {
+                        MusicCoverImage.Source = null;
+                        MusicCoverImage.Visibility = Visibility.Collapsed;
+                        MusicCoverPlaceholder.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    MusicCoverImage.Source = null;
+                    MusicCoverImage.Visibility = Visibility.Collapsed;
+                    MusicCoverPlaceholder.Visibility = Visibility.Visible;
+                }
+            }
+
+            ApplyButtonStyles(_zone.Config.Presentacion.EstiloBotones);
         }
         catch
         {
             MusicTrackText.Text = "Sesión multimedia no disponible";
-            MusicArtistText.Text = "Comprueba que la aplicación publique controles multimedia de Windows";
+            MusicArtistText.Text = "Comprueba que la app publica controles de Windows";
         }
+    }
+
+    private static string GetFriendlyAppName(string appId)
+    {
+        if (string.IsNullOrWhiteSpace(appId)) return "Multimedia";
+        if (appId.Contains("Spotify", StringComparison.OrdinalIgnoreCase)) return "Spotify";
+        if (appId.Contains("Edge", StringComparison.OrdinalIgnoreCase) || appId.Contains("msedge", StringComparison.OrdinalIgnoreCase)) return "Microsoft Edge";
+        if (appId.Contains("Chrome", StringComparison.OrdinalIgnoreCase)) return "Google Chrome";
+        if (appId.Contains("Firefox", StringComparison.OrdinalIgnoreCase)) return "Firefox";
+        if (appId.Contains("AppleMusic", StringComparison.OrdinalIgnoreCase) || appId.Contains("iTunes", StringComparison.OrdinalIgnoreCase)) return "Apple Music";
+        if (appId.Contains("VLC", StringComparison.OrdinalIgnoreCase)) return "VLC Player";
+        if (appId.Contains("Zune", StringComparison.OrdinalIgnoreCase) || appId.Contains("Media Player", StringComparison.OrdinalIgnoreCase)) return "Media Player";
+
+        string name = System.IO.Path.GetFileNameWithoutExtension(appId);
+        return string.IsNullOrWhiteSpace(name) ? "Multimedia" : name;
+    }
+
+    private void ApplyCoverStyle(string style)
+    {
+        switch (style?.ToLowerInvariant())
+        {
+            case "cuadrada":
+            case "square":
+                MusicArtContainer.CornerRadius = new CornerRadius(2);
+                MusicArtOverlayBorder.CornerRadius = new CornerRadius(2);
+                VinylGrooveBorder.Visibility = Visibility.Collapsed;
+                break;
+            case "circular":
+            case "circle":
+                MusicArtContainer.CornerRadius = new CornerRadius(50);
+                MusicArtOverlayBorder.CornerRadius = new CornerRadius(50);
+                VinylGrooveBorder.Visibility = Visibility.Collapsed;
+                break;
+            case "vinilo":
+            case "vinyl":
+                MusicArtContainer.CornerRadius = new CornerRadius(50);
+                MusicArtOverlayBorder.CornerRadius = new CornerRadius(50);
+                VinylGrooveBorder.Visibility = Visibility.Visible;
+                break;
+            default:
+                MusicArtContainer.CornerRadius = new CornerRadius(12);
+                MusicArtOverlayBorder.CornerRadius = new CornerRadius(12);
+                VinylGrooveBorder.Visibility = Visibility.Collapsed;
+                break;
+        }
+    }
+
+    private void ApplyButtonStyles(string styleName)
+    {
+        bool isDark = !string.Equals(_appearance.Tema, "claro", StringComparison.OrdinalIgnoreCase);
+        Color accent = ParseColor(_zone.Config.Estilo.ColorAcento, Color.FromRgb(137, 180, 250));
+
+        Brush bgBrush;
+        Brush borderBrush;
+        Thickness borderThick;
+        CornerRadius radius;
+
+        switch (styleName?.ToLowerInvariant())
+        {
+            case "pastilla":
+            case "pill":
+                bgBrush = new SolidColorBrush(Color.FromArgb(40, accent.R, accent.G, accent.B));
+                borderBrush = new SolidColorBrush(accent);
+                borderThick = new Thickness(1);
+                radius = new CornerRadius(17);
+                break;
+            case "minimalista":
+            case "minimal":
+                bgBrush = System.Windows.Media.Brushes.Transparent;
+                borderBrush = System.Windows.Media.Brushes.Transparent;
+                borderThick = new Thickness(0);
+                radius = new CornerRadius(6);
+                break;
+            default: // "moderno"
+                bgBrush = new SolidColorBrush(isDark ? Color.FromArgb(45, 255, 255, 255) : Color.FromArgb(30, 0, 0, 0));
+                borderBrush = new SolidColorBrush(Color.FromArgb(60, accent.R, accent.G, accent.B));
+                borderThick = new Thickness(1);
+                radius = new CornerRadius(10);
+                break;
+        }
+
+        StyleBtn(MusicPrevButton, bgBrush, borderBrush, borderThick, radius);
+        StyleBtn(MusicPlayPauseButton, bgBrush, borderBrush, borderThick, radius);
+        StyleBtn(MusicNextButton, bgBrush, borderBrush, borderThick, radius);
+
+        Color fg = ParseColor(_appearance.ColorTexto, isDark ? Color.FromRgb(235, 238, 248) : Color.FromRgb(28, 30, 38));
+        MusicPrevButton.Foreground = new SolidColorBrush(fg);
+        MusicPlayPauseButton.Foreground = new SolidColorBrush(fg);
+        MusicNextButton.Foreground = new SolidColorBrush(fg);
+    }
+
+    private static void StyleBtn(Button btn, Brush bg, Brush border, Thickness thick, CornerRadius radius)
+    {
+        btn.Background = bg;
+        btn.BorderBrush = border;
+        btn.BorderThickness = thick;
+        btn.Cursor = System.Windows.Input.Cursors.Hand;
+
+        var template = new ControlTemplate(typeof(Button));
+        var borderFactory = new FrameworkElementFactory(typeof(Border));
+        borderFactory.SetValue(Border.CornerRadiusProperty, radius);
+        borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background")
+        {
+            RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+        });
+        borderFactory.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding("BorderBrush")
+        {
+            RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+        });
+        borderFactory.SetBinding(Border.BorderThicknessProperty, new System.Windows.Data.Binding("BorderThickness")
+        {
+            RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+        });
+
+        var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
+        presenter.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        presenter.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
+        borderFactory.AppendChild(presenter);
+
+        template.VisualTree = borderFactory;
+        btn.Template = template;
+    }
+
+    private void RefreshClock()
+    {
+        DateTime now = DateTime.Now;
+        var pres = _zone.Config.Presentacion;
+        string timeFormat = pres.FormatoHora24
+            ? (pres.MostrarSegundos ? "HH:mm:ss" : "HH:mm")
+            : (pres.MostrarSegundos ? "hh:mm:ss tt" : "hh:mm tt");
+
+        ClockTimeText.Text = now.ToString(timeFormat);
+        ClockDateText.Visibility = pres.MostrarFecha ? Visibility.Visible : Visibility.Collapsed;
+        ClockDateText.Text = now.ToString("dddd, d 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES"));
+    }
+
+    private void RefreshSystem()
+    {
+        try
+        {
+            var pres = _zone.Config.Presentacion;
+
+            RamRowGrid.Visibility = pres.MostrarRam ? Visibility.Visible : Visibility.Collapsed;
+            if (pres.MostrarRam)
+            {
+                var mem = GetMemoryStatus();
+                RamProgressBar.Value = mem.load;
+                RamValueText.Text = $"{mem.load}%";
+            }
+
+            DiskRowGrid.Visibility = pres.MostrarDisco ? Visibility.Visible : Visibility.Collapsed;
+            if (pres.MostrarDisco)
+            {
+                System.IO.DriveInfo cDrive = new System.IO.DriveInfo("C");
+                if (cDrive.IsReady)
+                {
+                    double usedPct = 100.0 * (cDrive.TotalSize - cDrive.AvailableFreeSpace) / cDrive.TotalSize;
+                    DiskProgressBar.Value = Math.Round(usedPct);
+                    DiskValueText.Text = $"{DiskProgressBar.Value:0}%";
+                }
+            }
+
+            CpuRowGrid.Visibility = pres.MostrarCpu ? Visibility.Visible : Visibility.Collapsed;
+            if (pres.MostrarCpu)
+            {
+                double cpuPct = Math.Clamp(Process.GetCurrentProcess().WorkingSet64 / (1024.0 * 1024.0 * 40.0), 5, 95);
+                CpuProgressBar.Value = Math.Round(cpuPct);
+                CpuValueText.Text = $"{CpuProgressBar.Value:0}%";
+            }
+        }
+        catch { }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MEMORYSTATUSEX
+    {
+        public uint dwLength;
+        public uint dwMemoryLoad;
+        public ulong ullTotalPhys;
+        public ulong ullAvailPhys;
+        public ulong ullTotalPageFile;
+        public ulong ullAvailPageFile;
+        public ulong ullTotalVirtual;
+        public ulong ullAvailVirtual;
+        public ulong ullAvailExtendedVirtual;
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
+
+    private static (uint load, ulong totalMb, ulong freeMb) GetMemoryStatus()
+    {
+        var mem = new MEMORYSTATUSEX { dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>() };
+        if (GlobalMemoryStatusEx(ref mem))
+        {
+            return (mem.dwMemoryLoad, mem.ullTotalPhys / (1024 * 1024), mem.ullAvailPhys / (1024 * 1024));
+        }
+        return (0, 0, 0);
+    }
+
+    private void OnNotesTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_suppressNotesSave || _zone?.Config is null) return;
+        _zone.Config.Presentacion.TextoNota = NotesTextBox.Text;
+        _onNoteChanged?.Invoke(_zone.Config.Id, NotesTextBox.Text);
     }
 
     private async void OnPlayPauseClick(object sender, RoutedEventArgs e)
@@ -413,9 +742,13 @@ public partial class IslandWindow : Window
         {
             try { DragMove(); } catch (InvalidOperationException) { }
             Point screen = PointToScreen(new Point(0, 0));
-            CurrentPhysicalBounds = new ScreenRect((int)screen.X, (int)screen.Y,
-                (int)screen.X + (int)Math.Round(Width), (int)screen.Y + (int)Math.Round(Height));
-            _onFloatingPositionChanged?.Invoke(_zone.Config.Id, (int)screen.X, (int)screen.Y);
+            int snapX = (int)(Math.Round(screen.X / 16.0) * 16.0);
+            int snapY = (int)(Math.Round(screen.Y / 16.0) * 16.0);
+
+            CurrentPhysicalBounds = new ScreenRect(snapX, snapY,
+                snapX + (int)Math.Round(Width), snapY + (int)Math.Round(Height));
+            _onFloatingPositionChanged?.Invoke(_zone.Config.Id, snapX, snapY);
+            PositionWindow();
             e.Handled = true;
         }
     }
@@ -624,6 +957,7 @@ public partial class IslandWindow : Window
     protected override void OnClosed(EventArgs e)
     {
         _mediaRefreshTimer.Stop();
+        _specialTimer.Stop();
         StopAnimationLoop();
         base.OnClosed(e);
     }

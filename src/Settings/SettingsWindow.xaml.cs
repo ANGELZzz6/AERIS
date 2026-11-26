@@ -9,6 +9,8 @@ using IslasEscritorio.Desktop;
 using IslasEscritorio.Islands;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
+using ComboBox = System.Windows.Controls.ComboBox;
+using ComboBoxItem = System.Windows.Controls.ComboBoxItem;
 using Image = System.Windows.Controls.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -163,6 +165,8 @@ public partial class SettingsWindow : Window
             DisableFullscreenCheck.IsChecked = cfg.Activation.DesactivarEnPantallaCompleta;
             DisableDraggingCheck.IsChecked = cfg.Activation.DesactivarMientrasSeArrastra;
             AlwaysOnTopCheck.IsChecked = cfg.Activation.SiempreEncima;
+            SelectComboByTag(MaximizedBehaviorCombo, cfg.Activation.ComportamientoMaximizada);
+            MaximizedDelayBox.Text = cfg.Activation.RetardoMaximizadaMs.ToString();
 
             ShortcutRestoreBox.Text = cfg.Global.AtajoRestaurar;
             ShortcutPauseBox.Text = cfg.Global.AtajoPausar;
@@ -170,8 +174,7 @@ public partial class SettingsWindow : Window
             ShortcutSettingsBox.Text = cfg.Global.AtajoAjustes;
 
             RefreshIslandsList(selectIndex: cfg.Islands.Count > 0 ? 0 : -1);
-            SpecialIslandCombo.ItemsSource = cfg.Islands.Where(i => !string.Equals(i.Tipo, "archivos", StringComparison.OrdinalIgnoreCase)).ToList();
-            if (SpecialIslandCombo.Items.Count > 0) SpecialIslandCombo.SelectedIndex = 0;
+            RefreshSpecialIslandsCombo();
         }
         finally
         {
@@ -180,25 +183,185 @@ public partial class SettingsWindow : Window
         UpdateLivePreview();
     }
 
+    private void RefreshSpecialIslandsCombo(string? selectId = null)
+    {
+        if (SpecialIslandCombo is null) return;
+        var specialIslands = _workingConfig.Islands
+            .Where(i => !string.Equals(i.Tipo, "archivos", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        SpecialIslandCombo.ItemsSource = null;
+        SpecialIslandCombo.ItemsSource = specialIslands;
+
+        if (specialIslands.Count > 0)
+        {
+            if (selectId is not null)
+            {
+                IslandConfig? match = specialIslands.FirstOrDefault(i => i.Id == selectId);
+                SpecialIslandCombo.SelectedItem = match ?? specialIslands[0];
+            }
+            else if (SpecialIslandCombo.SelectedIndex < 0)
+            {
+                SpecialIslandCombo.SelectedIndex = 0;
+            }
+        }
+    }
+
+    private static void SelectComboByTag(ComboBox combo, string? tagValue)
+    {
+        if (combo is null || string.IsNullOrEmpty(tagValue)) return;
+        foreach (var item in combo.Items)
+        {
+            if (item is ComboBoxItem cbi && string.Equals(cbi.Tag as string, tagValue, StringComparison.OrdinalIgnoreCase))
+            {
+                combo.SelectedItem = cbi;
+                return;
+            }
+        }
+        if (combo.Items.Count > 0) combo.SelectedIndex = 0;
+    }
+
+    private static string? GetComboTag(ComboBox combo)
+    {
+        if (combo is null) return null;
+        if (combo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string tag)
+            return tag;
+        return combo.SelectedValue as string;
+    }
+
     private void OnSpecialIslandChanged(object sender, SelectionChangedEventArgs e)
     {
         if (SpecialIslandCombo.SelectedItem is not IslandConfig island || SpecialModeCombo is null) return;
-        SpecialModeCombo.SelectedValue = island.Presentacion.Modo;
-        SpecialXBox.Text = island.Presentacion.X.ToString();
-        SpecialYBox.Text = island.Presentacion.Y.ToString();
-        SpecialBgBox.Text = island.Presentacion.ColorFondo ?? string.Empty;
-        SpecialOpacityBox.Text = island.Presentacion.Opacidad?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+        _loadingUi = true;
+        try
+        {
+            SelectComboByTag(SpecialModeCombo, island.Presentacion.Modo);
+            SpecialXBox.Text = island.Presentacion.X.ToString();
+            SpecialYBox.Text = island.Presentacion.Y.ToString();
+            SpecialBgBox.Text = island.Presentacion.ColorFondo ?? string.Empty;
+            SpecialOpacityBox.Text = island.Presentacion.Opacidad?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+
+            string type = island.Tipo.ToLowerInvariant();
+
+            if (MusicOptionsGroup is not null) MusicOptionsGroup.Visibility = type == "musica" ? Visibility.Visible : Visibility.Collapsed;
+            if (ClockOptionsGroup is not null) ClockOptionsGroup.Visibility = type == "reloj" ? Visibility.Visible : Visibility.Collapsed;
+            if (SystemOptionsGroup is not null) SystemOptionsGroup.Visibility = type == "sistema" ? Visibility.Visible : Visibility.Collapsed;
+            if (NotesOptionsGroup is not null) NotesOptionsGroup.Visibility = type == "notas" ? Visibility.Visible : Visibility.Collapsed;
+
+            switch (type)
+            {
+                case "musica":
+                    SpecialShowCoverCheck.IsChecked = island.Presentacion.MostrarPortada;
+                    SelectComboByTag(SpecialCoverStyleCombo, island.Presentacion.EstiloPortada);
+                    SelectComboByTag(SpecialButtonsStyleCombo, island.Presentacion.EstiloBotones);
+                    SpecialShowAppCheck.IsChecked = island.Presentacion.MostrarAppOrigen;
+                    SpecialShowEqCheck.IsChecked = island.Presentacion.MostrarEcualizador;
+                    break;
+
+                case "reloj":
+                    SpecialClock24Check.IsChecked = island.Presentacion.FormatoHora24;
+                    SpecialClockSecondsCheck.IsChecked = island.Presentacion.MostrarSegundos;
+                    SpecialClockDateCheck.IsChecked = island.Presentacion.MostrarFecha;
+                    break;
+
+                case "sistema":
+                    SpecialSysRamCheck.IsChecked = island.Presentacion.MostrarRam;
+                    SpecialSysDiskCheck.IsChecked = island.Presentacion.MostrarDisco;
+                    SpecialSysCpuCheck.IsChecked = island.Presentacion.MostrarCpu;
+                    break;
+
+                case "notas":
+                    SpecialNotesText.Text = island.Presentacion.TextoNota ?? string.Empty;
+                    break;
+            }
+        }
+        finally
+        {
+            _loadingUi = false;
+        }
+        UpdateLivePreview();
+    }
+
+    private void OnSpecialFieldChanged(object sender, RoutedEventArgs e)
+    {
+        if (_loadingUi || !IsInitialized) return;
+        CollectSpecialIslandSettings();
+        UpdateLivePreview();
     }
 
     private void CollectSpecialIslandSettings()
     {
         if (SpecialIslandCombo.SelectedItem is not IslandConfig island) return;
-        island.Presentacion.Modo = SpecialModeCombo.SelectedValue as string ?? "borde";
+        island.Presentacion.Modo = GetComboTag(SpecialModeCombo) ?? "borde";
         if (int.TryParse(SpecialXBox.Text, out int x)) island.Presentacion.X = x;
         if (int.TryParse(SpecialYBox.Text, out int y)) island.Presentacion.Y = y;
         island.Presentacion.ColorFondo = string.IsNullOrWhiteSpace(SpecialBgBox.Text) ? null : SpecialBgBox.Text.Trim();
         island.Presentacion.Opacidad = double.TryParse(SpecialOpacityBox.Text, System.Globalization.NumberStyles.Float,
             System.Globalization.CultureInfo.InvariantCulture, out double opacity) ? opacity : null;
+
+        string type = island.Tipo.ToLowerInvariant();
+        switch (type)
+        {
+            case "musica":
+                island.Presentacion.MostrarPortada = SpecialShowCoverCheck.IsChecked == true;
+                if (GetComboTag(SpecialCoverStyleCombo) is string coverStyle) island.Presentacion.EstiloPortada = coverStyle;
+                if (GetComboTag(SpecialButtonsStyleCombo) is string btnStyle) island.Presentacion.EstiloBotones = btnStyle;
+                island.Presentacion.MostrarAppOrigen = SpecialShowAppCheck.IsChecked == true;
+                island.Presentacion.MostrarEcualizador = SpecialShowEqCheck.IsChecked == true;
+                break;
+
+            case "reloj":
+                island.Presentacion.FormatoHora24 = SpecialClock24Check.IsChecked == true;
+                island.Presentacion.MostrarSegundos = SpecialClockSecondsCheck.IsChecked == true;
+                island.Presentacion.MostrarFecha = SpecialClockDateCheck.IsChecked == true;
+                break;
+
+            case "sistema":
+                island.Presentacion.MostrarRam = SpecialSysRamCheck.IsChecked == true;
+                island.Presentacion.MostrarDisco = SpecialSysDiskCheck.IsChecked == true;
+                island.Presentacion.MostrarCpu = SpecialSysCpuCheck.IsChecked == true;
+                break;
+
+            case "notas":
+                island.Presentacion.TextoNota = SpecialNotesText.Text;
+                break;
+        }
+    }
+
+    private void OnAddMusicIslandClick(object sender, RoutedEventArgs e)
+    {
+        var island = AppConfig.CreateDefaultMusicIsland();
+        island.Id = $"musica-{Guid.NewGuid().ToString("N")[..5]}";
+        _workingConfig.Islands.Add(island);
+        RefreshIslandsList(_workingConfig.Islands.Count - 1);
+        RefreshSpecialIslandsCombo(island.Id);
+    }
+
+    private void OnAddClockIslandClick(object sender, RoutedEventArgs e)
+    {
+        var island = AppConfig.CreateDefaultClockIsland();
+        island.Id = $"reloj-{Guid.NewGuid().ToString("N")[..5]}";
+        _workingConfig.Islands.Add(island);
+        RefreshIslandsList(_workingConfig.Islands.Count - 1);
+        RefreshSpecialIslandsCombo(island.Id);
+    }
+
+    private void OnAddSystemIslandClick(object sender, RoutedEventArgs e)
+    {
+        var island = AppConfig.CreateDefaultSystemIsland();
+        island.Id = $"sistema-{Guid.NewGuid().ToString("N")[..5]}";
+        _workingConfig.Islands.Add(island);
+        RefreshIslandsList(_workingConfig.Islands.Count - 1);
+        RefreshSpecialIslandsCombo(island.Id);
+    }
+
+    private void OnAddNotesIslandClick(object sender, RoutedEventArgs e)
+    {
+        var island = AppConfig.CreateDefaultNotesIsland();
+        island.Id = $"notas-{Guid.NewGuid().ToString("N")[..5]}";
+        _workingConfig.Islands.Add(island);
+        RefreshIslandsList(_workingConfig.Islands.Count - 1);
+        RefreshSpecialIslandsCombo(island.Id);
     }
 
     private void RefreshIslandsList(int selectIndex)
@@ -237,8 +400,7 @@ public partial class SettingsWindow : Window
             if (island is null) return;
 
             IslandEnabledCheck.IsChecked = island.Habilitada;
-            IslandTypeCombo.SelectedValuePath = "Tag";
-            IslandTypeCombo.SelectedValue = island.Tipo;
+            SelectComboByTag(IslandTypeCombo, island.Tipo);
             IslandNameBox.Text = island.Nombre;
             IslandIdBox.Text = island.Id;
             IslandEdgeCombo.SelectedItem = island.Borde;
@@ -286,11 +448,8 @@ public partial class SettingsWindow : Window
         if (island is null) return;
 
         island.Habilitada = IslandEnabledCheck.IsChecked == true;
-        island.Tipo = IslandTypeCombo.SelectedValue as string ?? "archivos";
-        string? currentSpecialId = (SpecialIslandCombo.SelectedItem as IslandConfig)?.Id;
-        SpecialIslandCombo.ItemsSource = _workingConfig.Islands.Where(i => !string.Equals(i.Tipo, "archivos", StringComparison.OrdinalIgnoreCase)).ToList();
-        SpecialIslandCombo.SelectedItem = _workingConfig.Islands.FirstOrDefault(i => i.Id == currentSpecialId)
-            ?? _workingConfig.Islands.FirstOrDefault(i => !string.Equals(i.Tipo, "archivos", StringComparison.OrdinalIgnoreCase));
+        island.Tipo = GetComboTag(IslandTypeCombo) ?? "archivos";
+        RefreshSpecialIslandsCombo(island.Id);
         island.Nombre = IslandNameBox.Text.Trim();
         island.Id = string.IsNullOrWhiteSpace(IslandIdBox.Text) ? island.Id : IslandIdBox.Text.Trim();
         if (IslandEdgeCombo.SelectedItem is string edge) island.Borde = edge;
@@ -395,6 +554,59 @@ public partial class SettingsWindow : Window
         PreviewContentHost.Children.Clear();
         if (island is null) return;
 
+        if (!string.Equals(island.Tipo, "archivos", StringComparison.OrdinalIgnoreCase))
+        {
+            switch (island.Tipo.ToLowerInvariant())
+            {
+                case "musica":
+                    var musicBox = new StackPanel { Margin = new Thickness(0, 4, 0, 4) };
+                    var musicRow = new StackPanel { Orientation = Orientation.Horizontal };
+                    if (island.Presentacion.MostrarPortada)
+                    {
+                        var artBox = new Border
+                        {
+                            Width = 44,
+                            Height = 44,
+                            Background = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                            CornerRadius = island.Presentacion.EstiloPortada is "circular" or "vinilo" ? new CornerRadius(22) : new CornerRadius(6),
+                            Margin = new Thickness(0, 0, 10, 0)
+                        };
+                        artBox.Child = new TextBlock { Text = "🎵", FontSize = 20, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                        musicRow.Children.Add(artBox);
+                    }
+                    var musicInfo = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                    musicInfo.Children.Add(new TextBlock { Text = "Canción en reproducción", Foreground = new SolidColorBrush(fg), FontWeight = FontWeights.Bold, FontSize = 12 });
+                    musicInfo.Children.Add(new TextBlock { Text = "Artista", Foreground = new SolidColorBrush(fg), Opacity = 0.7, FontSize = 11 });
+                    musicRow.Children.Add(musicInfo);
+                    musicBox.Children.Add(musicRow);
+
+                    var btnRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
+                    btnRow.Children.Add(new TextBlock { Text = "⏮   ▶   ⏭", Foreground = new SolidColorBrush(fg), FontSize = 14, FontWeight = FontWeights.SemiBold });
+                    musicBox.Children.Add(btnRow);
+
+                    PreviewContentHost.Children.Add(musicBox);
+                    return;
+
+                case "reloj":
+                    var clockBox = new StackPanel { Margin = new Thickness(0, 8, 0, 8), HorizontalAlignment = System.Windows.HorizontalAlignment.Center };
+                    clockBox.Children.Add(new TextBlock { Text = DateTime.Now.ToString("HH:mm:ss"), Foreground = new SolidColorBrush(fg), FontSize = 20, FontWeight = FontWeights.Bold, HorizontalAlignment = System.Windows.HorizontalAlignment.Center });
+                    clockBox.Children.Add(new TextBlock { Text = DateTime.Now.ToString("dddd, d MMMM"), Foreground = new SolidColorBrush(fg), Opacity = 0.7, FontSize = 11, HorizontalAlignment = System.Windows.HorizontalAlignment.Center });
+                    PreviewContentHost.Children.Add(clockBox);
+                    return;
+
+                case "sistema":
+                    var sysBox = new StackPanel { Margin = new Thickness(0, 4, 0, 4) };
+                    sysBox.Children.Add(new TextBlock { Text = "RAM: 42% | DISCO: 58% | CPU: 12%", Foreground = new SolidColorBrush(fg), FontSize = 11 });
+                    PreviewContentHost.Children.Add(sysBox);
+                    return;
+
+                case "notas":
+                    var noteBox = new TextBlock { Text = string.IsNullOrWhiteSpace(island.Presentacion.TextoNota) ? "(Nota vacía)" : island.Presentacion.TextoNota, Foreground = new SolidColorBrush(fg), FontSize = 11, Opacity = 0.85 };
+                    PreviewContentHost.Children.Add(noteBox);
+                    return;
+            }
+        }
+
         IReadOnlyList<DesktopItem> items = _coordinator.GetFilteredItemsForIsland(island);
         int previewCount = Math.Min(items.Count, 12);
         for (int i = 0; i < previewCount; i++)
@@ -486,6 +698,9 @@ public partial class SettingsWindow : Window
         _workingConfig.Activation.DesactivarEnPantallaCompleta = DisableFullscreenCheck.IsChecked == true;
         _workingConfig.Activation.DesactivarMientrasSeArrastra = DisableDraggingCheck.IsChecked == true;
         _workingConfig.Activation.SiempreEncima = AlwaysOnTopCheck.IsChecked == true;
+        _workingConfig.Activation.ComportamientoMaximizada = GetComboTag(MaximizedBehaviorCombo) ?? "desactivar";
+        if (int.TryParse(MaximizedDelayBox.Text, out int maxDelay))
+            _workingConfig.Activation.RetardoMaximizadaMs = maxDelay;
 
         if (!_configService.TrySave(_workingConfig, out IReadOnlyList<string> errors))
         {
