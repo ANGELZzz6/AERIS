@@ -191,6 +191,23 @@
                              FontSize="12"
                              TextChanged="OnNotesTextChanged"/>
                 </Grid>
+
+                <!-- Host de NihilNox Server -->
+                <Grid x:Name="NihilNoxHost" Grid.Row="1" Visibility="Collapsed" Margin="6,4">
+                    <StackPanel VerticalAlignment="Center">
+                        <DockPanel Margin="0,0,0,6">
+                            <Border x:Name="NihilNoxBadge" DockPanel.Dock="Left" Background="#254CAF50" CornerRadius="6" Padding="8,3" HorizontalAlignment="Left">
+                                <TextBlock x:Name="NihilNoxStatusText" Text="🟢 NihilNox Activo" FontSize="11" FontWeight="Bold" Foreground="#4CAF50"/>
+                            </Border>
+                            <TextBlock x:Name="NihilNoxUrlText" DockPanel.Dock="Right" Text="ngrok.dev" FontSize="11" Foreground="#89B4FA" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        </DockPanel>
+                        <TextBlock Text="Servidor multimedia (Spotify, YouTube, IG)" FontSize="12" Opacity="0.8" Margin="0,0,0,8" TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Button x:Name="NihilNoxToggleButton" Content="▶ Iniciar" Width="100" Height="32" Margin="0,0,8,0" Click="OnNihilNoxToggleClick" ToolTip="Iniciar o Detener servidor" Cursor="Hand"/>
+                            <Button x:Name="NihilNoxCopyButton" Content="📋 Copiar URL" Width="110" Height="32" Margin="0,0,8,0" Click="OnNihilNoxCopyClick" ToolTip="Copiar URL ngrok" Cursor="Hand"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

@@ -116,6 +116,7 @@ public partial class IslandWindow : Window
         ClockHost.Visibility = string.Equals(type, "reloj", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
         SystemHost.Visibility = string.Equals(type, "sistema", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
         NotesHost.Visibility = string.Equals(type, "notas", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+        NihilNoxHost.Visibility = string.Equals(type, "nihilnox", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
 
         TitleText.Text = string.IsNullOrWhiteSpace(_zone.Config.Nombre) ? _zone.Config.Id : _zone.Config.Nombre;
         CountText.Text = items.Count.ToString();
@@ -142,6 +143,14 @@ public partial class IslandWindow : Window
             _mediaRefreshTimer.Stop();
             _specialTimer.Start();
             RefreshSystem();
+            return;
+        }
+
+        if (string.Equals(type, "nihilnox", StringComparison.OrdinalIgnoreCase))
+        {
+            _mediaRefreshTimer.Stop();
+            _specialTimer.Start();
+            RefreshNihilNox();
             return;
         }
 
@@ -221,6 +230,7 @@ public partial class IslandWindow : Window
         string type = _zone.Config.Tipo.ToLowerInvariant();
         if (type == "reloj") RefreshClock();
         else if (type == "sistema") RefreshSystem();
+        else if (type == "nihilnox") RefreshNihilNox();
     }
 
     private async Task RefreshMediaAsync()
@@ -1001,6 +1011,39 @@ public partial class IslandWindow : Window
         }
         catch { }
         return fallback;
+    }
+
+    private void RefreshNihilNox()
+    {
+        try
+        {
+            bool running = NihilNoxServerManager.IsRunning;
+            string domain = NihilNoxServerManager.GetConfiguredDomain();
+            NihilNoxStatusText.Text = running ? "🟢 NihilNox Activo" : "⚪ NihilNox Detenido";
+            NihilNoxBadge.Background = new SolidColorBrush(running ? Color.FromArgb(40, 76, 175, 80) : Color.FromArgb(40, 100, 100, 100));
+            NihilNoxStatusText.Foreground = new SolidColorBrush(running ? Color.FromRgb(76, 175, 80) : Color.FromRgb(160, 160, 160));
+            NihilNoxUrlText.Text = running ? $"https://{domain}" : "Servidor inactivo";
+            NihilNoxToggleButton.Content = running ? "⏹ Detener" : "▶ Iniciar";
+        }
+        catch { }
+    }
+
+    private void OnNihilNoxToggleClick(object sender, RoutedEventArgs e)
+    {
+        NihilNoxServerManager.ToggleServer();
+        RefreshNihilNox();
+    }
+
+    private void OnNihilNoxCopyClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string domain = NihilNoxServerManager.GetConfiguredDomain();
+            System.Windows.Clipboard.SetText($"https://{domain}");
+            NihilNoxCopyButton.Content = "📋 ¡Copiado!";
+            Task.Delay(2000).ContinueWith(_ => Dispatcher.Invoke(() => NihilNoxCopyButton.Content = "📋 Copiar URL"));
+        }
+        catch { }
     }
 
     protected override void OnClosed(EventArgs e)

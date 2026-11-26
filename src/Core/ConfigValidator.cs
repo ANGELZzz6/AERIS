@@ -101,8 +101,9 @@ public static partial class ConfigValidator
                 !string.Equals(island.Tipo, "musica", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(island.Tipo, "reloj", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(island.Tipo, "sistema", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(island.Tipo, "nihilnox", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(island.Tipo, "notas", StringComparison.OrdinalIgnoreCase))
-                errors.Add($"{prefix}.tipo debe ser 'archivos', 'musica', 'reloj', 'sistema' o 'notas'.");
+                errors.Add($"{prefix}.tipo debe ser 'archivos', 'musica', 'reloj', 'sistema', 'nihilnox' o 'notas'.");
             if (island.Presentacion.Modo is not ("borde" or "siempre" or "flotante"))
                 errors.Add($"{prefix}.presentacion.modo debe ser 'borde', 'siempre' o 'flotante'.");
             if (island.Presentacion.Opacidad is < 0.1 or > 1.0)

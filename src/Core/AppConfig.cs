@@ -137,6 +137,30 @@ public sealed class AppConfig
         Estilo = new IslandStyleConfig { ColorAcento = "#89DCEB" }
     };
 
+    public static IslandConfig CreateDefaultNihilNoxIsland() => new()
+    {
+        Id = "nihilnox",
+        Tipo = "nihilnox",
+        Nombre = "NihilNox Server",
+        Habilitada = true,
+        Borde = "inferior",
+        Monitor = "principal",
+        Tamano = new IslandSizeConfig { AnchoPx = 380, AltoPx = 140, MinAnchoPx = 280, MinAltoPx = 120 },
+        Presentacion = new SpecialIslandPresentation
+        {
+            Modo = "borde",
+            X = 400,
+            Y = 400
+        },
+        Contenido = new IslandContentConfig
+        {
+            Fuentes = [],
+            Filtros = new IslandFilterConfig { Incluir = [], Excluir = [], Tipos = [] },
+            Disposicion = "lista"
+        },
+        Estilo = new IslandStyleConfig { ColorAcento = "#A6E3A1" }
+    };
+
     public static IslandConfig CreateDefaultClockIsland() => new()
     {
         Id = "reloj",

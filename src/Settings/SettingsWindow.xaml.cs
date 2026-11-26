@@ -248,6 +248,7 @@ public partial class SettingsWindow : Window
             if (ClockOptionsGroup is not null) ClockOptionsGroup.Visibility = type == "reloj" ? Visibility.Visible : Visibility.Collapsed;
             if (SystemOptionsGroup is not null) SystemOptionsGroup.Visibility = type == "sistema" ? Visibility.Visible : Visibility.Collapsed;
             if (NotesOptionsGroup is not null) NotesOptionsGroup.Visibility = type == "notas" ? Visibility.Visible : Visibility.Collapsed;
+            if (NihilNoxOptionsGroup is not null) NihilNoxOptionsGroup.Visibility = type == "nihilnox" ? Visibility.Visible : Visibility.Collapsed;
 
             switch (type)
             {
@@ -360,6 +361,15 @@ public partial class SettingsWindow : Window
     {
         var island = AppConfig.CreateDefaultNotesIsland();
         island.Id = $"notas-{Guid.NewGuid().ToString("N")[..5]}";
+        _workingConfig.Islands.Add(island);
+        RefreshIslandsList(_workingConfig.Islands.Count - 1);
+        RefreshSpecialIslandsCombo(island.Id);
+    }
+
+    private void OnAddNihilNoxIslandClick(object sender, RoutedEventArgs e)
+    {
+        var island = AppConfig.CreateDefaultNihilNoxIsland();
+        island.Id = $"nihilnox-{Guid.NewGuid().ToString("N")[..5]}";
         _workingConfig.Islands.Add(island);
         RefreshIslandsList(_workingConfig.Islands.Count - 1);
         RefreshSpecialIslandsCombo(island.Id);
@@ -604,6 +614,13 @@ public partial class SettingsWindow : Window
                 case "notas":
                     var noteBox = new TextBlock { Text = string.IsNullOrWhiteSpace(island.Presentacion.TextoNota) ? "(Nota vacía)" : island.Presentacion.TextoNota, Foreground = new SolidColorBrush(fg), FontSize = 11, Opacity = 0.85 };
                     PreviewContentHost.Children.Add(noteBox);
+                    return;
+
+                case "nihilnox":
+                    var nnBox = new StackPanel { Margin = new Thickness(0, 4, 0, 4) };
+                    nnBox.Children.Add(new TextBlock { Text = "🟢 NihilNox Server (Activo)", Foreground = new SolidColorBrush(fg), FontSize = 12, FontWeight = FontWeights.Bold });
+                    nnBox.Children.Add(new TextBlock { Text = "https://tudominio.ngrok.dev", Foreground = new SolidColorBrush(fg), FontSize = 11, Opacity = 0.75 });
+                    PreviewContentHost.Children.Add(nnBox);
                     return;
             }
         }
@@ -880,5 +897,15 @@ public partial class SettingsWindow : Window
     private void OnRunOcrClick(object sender, RoutedEventArgs e)
     {
         _coordinator.StartOcrScreenCapture();
+    }
+
+    private void OnStartNihilNoxClick(object sender, RoutedEventArgs e)
+    {
+        NihilNoxServerManager.StartServer();
+    }
+
+    private void OnStopNihilNoxClick(object sender, RoutedEventArgs e)
+    {
+        NihilNoxServerManager.StopServer();
     }
 }
