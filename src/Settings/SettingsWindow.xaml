@@ -612,6 +612,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Restaurar escritorio (emergencia):"/>
@@ -625,6 +626,9 @@
 
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Abrir ajustes:"/>
                         <TextBox Grid.Row="3" Grid.Column="1" x:Name="ShortcutSettingsBox" Margin="0,6" PreviewKeyDown="OnShortcutKeyDown"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Extraer texto OCR:"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" x:Name="ShortcutOcrBox" Margin="0,6" PreviewKeyDown="OnShortcutKeyDown"/>
                     </Grid>
                 </StackPanel>
             </TabItem>
@@ -634,6 +638,7 @@
         <DockPanel Grid.Row="2" Margin="0,12,0,0">
             <TextBlock x:Name="StatusText" DockPanel.Dock="Left" Opacity="0.8"/>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="🔍 Capturar Texto (OCR)" Click="OnRunOcrClick" Margin="0,0,16,0" Background="#2C3B4E" BorderBrush="#89B4FA"/>
                 <Button Content="Aplicar" Click="OnApplyClick" Margin="0,0,8,0"/>
                 <Button Content="Guardar y cerrar" Click="OnSaveAndCloseClick"
                         Background="#365486" BorderBrush="#89B4FA" Margin="0,0,8,0"/>

@@ -55,6 +55,7 @@ public partial class IslandWindow : Window
     private GlobalSystemMediaTransportControlsSessionManager? _mediaManager;
     private GlobalSystemMediaTransportControlsSession? _currentMediaSession;
     private bool _suppressNotesSave;
+    private bool _isUpdatingVolumeSlider;
     private readonly Action<string, string>? _onNoteChanged;
 
     public string RuntimeId => _zone.RuntimeId;
@@ -310,6 +311,7 @@ public partial class IslandWindow : Window
                 }
             }
 
+            UpdateVolumeControlUI();
             ApplyButtonStyles(_zone.Config.Presentacion.EstiloBotones);
         }
         catch
@@ -401,11 +403,13 @@ public partial class IslandWindow : Window
         StyleBtn(MusicPrevButton, bgBrush, borderBrush, borderThick, radius);
         StyleBtn(MusicPlayPauseButton, bgBrush, borderBrush, borderThick, radius);
         StyleBtn(MusicNextButton, bgBrush, borderBrush, borderThick, radius);
+        StyleBtn(MusicMuteButton, bgBrush, borderBrush, borderThick, radius);
 
         Color fg = ParseColor(_appearance.ColorTexto, isDark ? Color.FromRgb(235, 238, 248) : Color.FromRgb(28, 30, 38));
         MusicPrevButton.Foreground = new SolidColorBrush(fg);
         MusicPlayPauseButton.Foreground = new SolidColorBrush(fg);
         MusicNextButton.Foreground = new SolidColorBrush(fg);
+        MusicMuteButton.Foreground = new SolidColorBrush(fg);
     }
 
     private static void StyleBtn(Button btn, Brush bg, Brush border, Thickness thick, CornerRadius radius)
@@ -525,6 +529,22 @@ public partial class IslandWindow : Window
         _onNoteChanged?.Invoke(_zone.Config.Id, NotesTextBox.Text);
     }
 
+    private void OnCleanRamClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var (optimized, freedBytes) = MemoryOptimizer.OptimizeMemory();
+            double freedMb = freedBytes / (1024.0 * 1024.0);
+            CleanRamButton.Content = $"⚡ ¡{freedMb:F1} MB liberados!";
+            Task.Delay(3000).ContinueWith(_ => Dispatcher.Invoke(() => CleanRamButton.Content = "⚡ Optimizar RAM"));
+        }
+        catch
+        {
+            CleanRamButton.Content = "⚡ Error";
+            Task.Delay(2000).ContinueWith(_ => Dispatcher.Invoke(() => CleanRamButton.Content = "⚡ Optimizar RAM"));
+        }
+    }
+
     private async void OnPlayPauseClick(object sender, RoutedEventArgs e)
     {
         if (_currentMediaSession is not null) await _currentMediaSession.TryTogglePlayPauseAsync();
@@ -539,6 +559,35 @@ public partial class IslandWindow : Window
     {
         if (_currentMediaSession is not null) await _currentMediaSession.TrySkipNextAsync();
         await RefreshMediaAsync();
+    }
+
+    private void UpdateVolumeControlUI()
+    {
+        _isUpdatingVolumeSlider = true;
+        try
+        {
+            float vol = AudioVolumeService.GetVolume();
+            bool isMuted = AudioVolumeService.IsMuted();
+            MusicVolumeSlider.Value = vol;
+            MusicMuteButton.Content = isMuted ? "🔇" : (vol < 20 ? "🔈" : (vol < 70 ? "🔉" : "🔊"));
+        }
+        finally
+        {
+            _isUpdatingVolumeSlider = false;
+        }
+    }
+
+    private void OnMusicVolumeSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_isUpdatingVolumeSlider) return;
+        AudioVolumeService.SetVolume((float)e.NewValue);
+        UpdateVolumeControlUI();
+    }
+
+    private void OnVolumeMuteClick(object sender, RoutedEventArgs e)
+    {
+        AudioVolumeService.ToggleMute();
+        UpdateVolumeControlUI();
     }
 
     private void AddItemsContainer(

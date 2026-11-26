@@ -116,11 +116,14 @@
                         <TextBlock x:Name="MusicTrackText" Text="No hay música activa" FontSize="14" FontWeight="Bold" TextTrimming="CharacterEllipsis" Margin="0,0,0,2"/>
                         <TextBlock x:Name="MusicArtistText" Text="Inicia reproducción en una app compatible" FontSize="12" Opacity="0.75" TextTrimming="CharacterEllipsis" Margin="0,0,0,8"/>
 
-                        <!-- Botones de Control Estilizados -->
+                        <!-- Botones de Control Estilizados y Barra de Volumen -->
                         <StackPanel x:Name="MusicControlsHost" Orientation="Horizontal" HorizontalAlignment="Left">
                             <Button x:Name="MusicPrevButton" Content="⏮" Width="38" Height="34" Margin="0,0,6,0" Click="OnPreviousTrackClick" ToolTip="Anterior"/>
                             <Button x:Name="MusicPlayPauseButton" Content="▶" Width="52" Height="34" Margin="0,0,6,0" Click="OnPlayPauseClick" ToolTip="Reproducir / Pausar"/>
                             <Button x:Name="MusicNextButton" Content="⏭" Width="38" Height="34" Margin="0,0,6,0" Click="OnNextTrackClick" ToolTip="Siguiente"/>
+                            <Border Width="1" Height="22" Background="#33FFFFFF" Margin="6,0,8,0" VerticalAlignment="Center"/>
+                            <Button x:Name="MusicMuteButton" Content="🔊" Width="34" Height="34" Margin="0,0,6,0" Click="OnVolumeMuteClick" ToolTip="Silenciar / Activar sonido"/>
+                            <Slider x:Name="MusicVolumeSlider" Width="95" Height="24" VerticalAlignment="Center" Minimum="0" Maximum="100" Value="50" ValueChanged="OnMusicVolumeSliderValueChanged" ToolTip="Volumen del sistema"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -159,7 +162,7 @@
                             <TextBlock x:Name="DiskValueText" Text="60%" FontSize="11" TextAlignment="Right" Grid.Column="2"/>
                         </Grid>
                         <!-- CPU -->
-                        <Grid x:Name="CpuRowGrid">
+                        <Grid x:Name="CpuRowGrid" Margin="0,0,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="65"/>
                                 <ColumnDefinition Width="*"/>
@@ -169,6 +172,9 @@
                             <ProgressBar x:Name="CpuProgressBar" Height="10" Value="15" Maximum="100" Grid.Column="1" VerticalAlignment="Center"/>
                             <TextBlock x:Name="CpuValueText" Text="15%" FontSize="11" TextAlignment="Right" Grid.Column="2"/>
                         </Grid>
+
+                        <!-- Botón de Optimizar RAM -->
+                        <Button x:Name="CleanRamButton" Content="⚡ Optimizar RAM" Height="28" Margin="0,8,0,0" Click="OnCleanRamClick" ToolTip="Liberar memoria RAM inactiva de procesos" Cursor="Hand"/>
                     </StackPanel>
                 </Grid>
 

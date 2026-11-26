@@ -17,6 +17,8 @@ public sealed class TrayIconService : IDisposable
     public event Action? TogglePauseClicked;
     public event Action? ToggleIslandsClicked;
     public event Action? RestoreDesktopClicked;
+    public event Action? OcrRequested;
+    public event Action? MemoryOptimizeRequested;
     public event Action? ExitClicked;
 
     public TrayIconService()
@@ -34,6 +36,12 @@ public sealed class TrayIconService : IDisposable
         var toggleIslandsItem = new ToolStripMenuItem("Mostrar / ocultar islas");
         toggleIslandsItem.Click += (_, _) => ToggleIslandsClicked?.Invoke();
 
+        var ocrItem = new ToolStripMenuItem("🔍 Extraer texto de pantalla (OCR)");
+        ocrItem.Click += (_, _) => OcrRequested?.Invoke();
+
+        var optimizeRamItem = new ToolStripMenuItem("⚡ Optimizar Memoria RAM");
+        optimizeRamItem.Click += (_, _) => MemoryOptimizeRequested?.Invoke();
+
         var restoreItem = new ToolStripMenuItem("Restaurar escritorio");
         restoreItem.Click += (_, _) => RestoreDesktopClicked?.Invoke();
 
@@ -44,6 +52,8 @@ public sealed class TrayIconService : IDisposable
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(_pauseItem);
         menu.Items.Add(toggleIslandsItem);
+        menu.Items.Add(ocrItem);
+        menu.Items.Add(optimizeRamItem);
         menu.Items.Add(restoreItem);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(exitItem);

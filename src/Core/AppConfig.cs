@@ -226,6 +226,9 @@ public sealed class GlobalConfig
 
     [JsonPropertyName("atajoAjustes")]
     public string AtajoAjustes { get; set; } = "Ctrl+Alt+A";
+
+    [JsonPropertyName("atajoOcr")]
+    public string AtajoOcr { get; set; } = "Win+Shift+T";
 }
 
 public sealed class ActivationConfig

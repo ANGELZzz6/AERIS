@@ -10,7 +10,8 @@ public enum HotkeyAction
     RestoreDesktop = 1,
     TogglePause = 2,
     ToggleIslands = 3,
-    OpenSettings = 4
+    OpenSettings = 4,
+    TriggerOcr = 5
 }
 
 public sealed class GlobalHotkeyManager : IDisposable
@@ -47,6 +48,7 @@ public sealed class GlobalHotkeyManager : IDisposable
         TryRegister(HotkeyAction.TogglePause, global.AtajoPausar);
         TryRegister(HotkeyAction.ToggleIslands, global.AtajoAlternar);
         TryRegister(HotkeyAction.OpenSettings, global.AtajoAjustes);
+        TryRegister(HotkeyAction.TriggerOcr, global.AtajoOcr);
     }
 
     private void TryRegister(HotkeyAction action, string? shortcut)

@@ -40,6 +40,13 @@ public partial class App : Application
         _tray.TogglePauseClicked += () => _coordinator.TogglePause();
         _tray.ToggleIslandsClicked += () => _coordinator.ToggleIslandsVisibility();
         _tray.RestoreDesktopClicked += () => _coordinator.RestoreDesktopAndPause();
+        _tray.OcrRequested += () => _coordinator.StartOcrScreenCapture();
+        _tray.MemoryOptimizeRequested += () =>
+        {
+            var (opt, freed) = MemoryOptimizer.OptimizeMemory();
+            double freedMb = freed / (1024.0 * 1024.0);
+            _tray.ShowNotification("AERIS - Memoria RAM Optimizada ⚡", $"Procesos optimizados: {opt}\nMemoria liberada: {freedMb:F1} MB");
+        };
         _tray.ExitClicked += ShutdownCleanly;
 
         _coordinator.PauseStateChanged += paused => _tray.SetPaused(paused);

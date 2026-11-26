@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <Page Include="..\Islands\IslandWindow.xaml" Link="Islands\IslandWindow.xaml" />
+    <Page Include="..\Islands\OcrOverlayWindow.xaml" Link="Islands\OcrOverlayWindow.xaml" />
     <Page Include="..\Settings\SettingsWindow.xaml" Link="Settings\SettingsWindow.xaml" />
   </ItemGroup>
 

@@ -172,6 +172,7 @@ public partial class SettingsWindow : Window
             ShortcutPauseBox.Text = cfg.Global.AtajoPausar;
             ShortcutToggleBox.Text = cfg.Global.AtajoAlternar;
             ShortcutSettingsBox.Text = cfg.Global.AtajoAjustes;
+            ShortcutOcrBox.Text = cfg.Global.AtajoOcr;
 
             RefreshIslandsList(selectIndex: cfg.Islands.Count > 0 ? 0 : -1);
             RefreshSpecialIslandsCombo();
@@ -581,7 +582,7 @@ public partial class SettingsWindow : Window
                     musicBox.Children.Add(musicRow);
 
                     var btnRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
-                    btnRow.Children.Add(new TextBlock { Text = "⏮   ▶   ⏭", Foreground = new SolidColorBrush(fg), FontSize = 14, FontWeight = FontWeights.SemiBold });
+                    btnRow.Children.Add(new TextBlock { Text = "⏮   ▶   ⏭   |   🔊  ═══⚪══", Foreground = new SolidColorBrush(fg), FontSize = 13, FontWeight = FontWeights.SemiBold });
                     musicBox.Children.Add(btnRow);
 
                     PreviewContentHost.Children.Add(musicBox);
@@ -667,6 +668,7 @@ public partial class SettingsWindow : Window
         _workingConfig.Global.AtajoPausar = ShortcutPauseBox.Text.Trim();
         _workingConfig.Global.AtajoAlternar = ShortcutToggleBox.Text.Trim();
         _workingConfig.Global.AtajoAjustes = ShortcutSettingsBox.Text.Trim();
+        _workingConfig.Global.AtajoOcr = ShortcutOcrBox.Text.Trim();
 
         string estiloTaskbar = TaskbarStyleCombo.SelectedValue as string ?? "predeterminado";
         _workingConfig.Taskbar.Estilo = estiloTaskbar;
@@ -873,5 +875,10 @@ public partial class SettingsWindow : Window
         }
         catch { }
         return fallback;
+    }
+
+    private void OnRunOcrClick(object sender, RoutedEventArgs e)
+    {
+        _coordinator.StartOcrScreenCapture();
     }
 }

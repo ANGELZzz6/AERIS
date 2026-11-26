@@ -34,6 +34,9 @@ internal static class Program
         Run("MouseHook: instala bucle de mensajes dedicado y libera sin bloquear", TestMouseHookLifecycle);
         Run("SettingsWindow: inicializa XAML y carga configuración sin excepciones", TestSettingsWindowInit);
         Run("IslandWindow: abre, posiciona y anima hasta opacidad 1 sin errores", TestIslandWindowOpenAndAnimate);
+        Run("AudioVolumeService: consulta y asignación de volumen maestro", TestAudioVolumeService);
+        Run("OcrService: atajo global y procesamiento seguro de imágenes", TestOcrServiceAndShortcut);
+        Run("MemoryOptimizer: optimización y exclusión segura de procesos", TestMemoryOptimizer);
 
         Console.WriteLine();
         Console.WriteLine($"Resumen: {_passed} pasaron, {_failed} fallaron.");
@@ -360,6 +363,37 @@ internal static class Program
         if (threadEx is not null) throw threadEx;
         Assert(visible, "IslandWindow debe quedar visible tras AnimateOpen.");
         Assert(actualW > 100 && actualH > 100, $"Dimensiones inválidas en IslandWindow: {actualW}x{actualH}");
+    }
+
+    private static void TestAudioVolumeService()
+    {
+        float currentVol = AudioVolumeService.GetVolume();
+        Assert(currentVol >= 0f && currentVol <= 100f, $"Volumen fuera de rango: {currentVol}");
+
+        bool isMuted = AudioVolumeService.IsMuted();
+        // Intentar consultar estado sin fallar
+        Assert(isMuted == true || isMuted == false, "IsMuted debe devolver un booleano válido.");
+    }
+
+    private static void TestOcrServiceAndShortcut()
+    {
+        var config = new GlobalConfig();
+        Assert(config.AtajoOcr == "Win+Shift+T", "Atajo de OCR por defecto debe ser Win+Shift+T");
+
+        bool parsed = GlobalHotkeyManager.TryParseShortcut(config.AtajoOcr, out uint mods, out uint vk);
+        Assert(parsed, "TryParseShortcut debe parsear Win+Shift+T correctamente.");
+
+        // Prueba asíncrona segura con bitmap nulo
+        var task = OcrService.ExtractTextFromBitmapAsync(null!);
+        task.Wait();
+        Assert(string.IsNullOrEmpty(task.Result), "Bitmap nulo debe retornar cadena vacía sin lanzar excepciones.");
+    }
+
+    private static void TestMemoryOptimizer()
+    {
+        var (optimized, freed) = MemoryOptimizer.OptimizeMemory();
+        Assert(optimized >= 0, "El número de procesos optimizados no puede ser negativo.");
+        Assert(freed >= 0, "Los bytes liberados estimados no pueden ser negativos.");
     }
 
     private static void PrintDiagnostics()

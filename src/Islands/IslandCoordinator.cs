@@ -338,6 +338,16 @@ public sealed class IslandCoordinator : IDisposable
         }
     }
 
+    public void StartOcrScreenCapture()
+    {
+        _dispatcher.BeginInvoke(() =>
+        {
+            var ocrOverlay = new OcrOverlayWindow();
+            ocrOverlay.Show();
+            ocrOverlay.Activate();
+        });
+    }
+
     private void HandleHotkey(HotkeyAction action)
     {
         switch (action)
@@ -353,6 +363,9 @@ public sealed class IslandCoordinator : IDisposable
                 break;
             case HotkeyAction.OpenSettings:
                 OpenSettingsRequested?.Invoke();
+                break;
+            case HotkeyAction.TriggerOcr:
+                StartOcrScreenCapture();
                 break;
         }
     }
