@@ -275,6 +275,14 @@ public partial class SettingsWindow : Window
                 case "notas":
                     SpecialNotesText.Text = island.Presentacion.TextoNota ?? string.Empty;
                     break;
+
+                case "nihilnox":
+                    var cfg = NihilNoxServerManager.LoadConfig();
+                    if (NihilNoxTokenBox is not null) NihilNoxTokenBox.Text = cfg.GetValueOrDefault("ngrok_token", "");
+                    if (NihilNoxDomainBox is not null) NihilNoxDomainBox.Text = cfg.GetValueOrDefault("ngrok_domain", "");
+                    if (NihilNoxApiKeyBox is not null) NihilNoxApiKeyBox.Text = cfg.GetValueOrDefault("api_key", "");
+                    if (NihilNoxFfmpegBox is not null) NihilNoxFfmpegBox.Text = cfg.GetValueOrDefault("ffmpeg_path", "");
+                    break;
             }
         }
         finally
@@ -678,6 +686,19 @@ public partial class SettingsWindow : Window
     private bool CollectNonIslandFieldsAndSave()
     {
         CollectSpecialIslandSettings();
+
+        // Preservar posiciones y modo actuales de las islas si el usuario las movió en el escritorio
+        var liveIslands = _configService.Current.Islands.ToDictionary(i => i.Id, i => i.Presentacion);
+        foreach (var island in _workingConfig.Islands)
+        {
+            if (liveIslands.TryGetValue(island.Id, out var livePres))
+            {
+                island.Presentacion.X = livePres.X;
+                island.Presentacion.Y = livePres.Y;
+                island.Presentacion.Modo = livePres.Modo;
+            }
+        }
+
         _workingConfig.Global.OcultarIconosEscritorio = HideDesktopIconsCheck.IsChecked == true;
         _workingConfig.Global.IniciarConWindows = StartWithWindowsCheck.IsChecked == true;
         _workingConfig.Global.Idioma = LanguageCombo.SelectedIndex == 1 ? "en" : "es";
@@ -907,5 +928,21 @@ public partial class SettingsWindow : Window
     private void OnStopNihilNoxClick(object sender, RoutedEventArgs e)
     {
         NihilNoxServerManager.StopServer();
+    }
+
+    private void OnSaveNihilNoxConfigClick(object sender, RoutedEventArgs e)
+    {
+        string token = NihilNoxTokenBox?.Text.Trim() ?? "";
+        string domain = NihilNoxDomainBox?.Text.Trim() ?? "";
+        string apiKey = NihilNoxApiKeyBox?.Text.Trim() ?? "";
+        string ffmpeg = NihilNoxFfmpegBox?.Text.Trim() ?? "";
+
+        NihilNoxServerManager.SaveConfig(token, domain, apiKey, ffmpeg);
+        StatusText.Text = "Configuración de NihilNox guardada.";
+    }
+
+    private void OnNihilNoxConfigFieldChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingUi) return;
     }
 }
