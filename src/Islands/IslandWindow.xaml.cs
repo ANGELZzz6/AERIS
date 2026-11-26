@@ -1018,12 +1018,32 @@ public partial class IslandWindow : Window
         try
         {
             bool running = NihilNoxServerManager.IsRunning;
+            string localIp = NihilNoxServerManager.GetLocalIpAddress();
             string domain = NihilNoxServerManager.GetConfiguredDomain();
+            string cfUrl = NihilNoxServerManager.CloudflareUrl;
+
             NihilNoxStatusText.Text = running ? "🟢 NihilNox Activo" : "⚪ NihilNox Detenido";
             NihilNoxBadge.Background = new SolidColorBrush(running ? Color.FromArgb(40, 76, 175, 80) : Color.FromArgb(40, 100, 100, 100));
             NihilNoxStatusText.Foreground = new SolidColorBrush(running ? Color.FromRgb(76, 175, 80) : Color.FromRgb(160, 160, 160));
-            NihilNoxUrlText.Text = running ? $"https://{domain}" : "Servidor inactivo";
+
+            if (running)
+            {
+                string displayUrl = !string.IsNullOrEmpty(cfUrl) ? cfUrl : (!string.IsNullOrEmpty(domain) ? $"https://{domain}" : $"http://{localIp}:8000");
+                NihilNoxUrlText.Text = displayUrl;
+            }
+            else
+            {
+                NihilNoxUrlText.Text = "Servidor inactivo";
+            }
+
             NihilNoxToggleButton.Content = running ? "⏹ Detener" : "▶ Iniciar";
+
+            string logs = string.Join(Environment.NewLine, NihilNoxServerManager.Logs);
+            if (NihilNoxLogBox.Text != logs)
+            {
+                NihilNoxLogBox.Text = logs;
+                NihilNoxLogBox.ScrollToEnd();
+            }
         }
         catch { }
     }
@@ -1038,8 +1058,12 @@ public partial class IslandWindow : Window
     {
         try
         {
+            string localIp = NihilNoxServerManager.GetLocalIpAddress();
+            string cfUrl = NihilNoxServerManager.CloudflareUrl;
             string domain = NihilNoxServerManager.GetConfiguredDomain();
-            System.Windows.Clipboard.SetText($"https://{domain}");
+            string urlToCopy = !string.IsNullOrEmpty(cfUrl) ? cfUrl : (!string.IsNullOrEmpty(domain) ? $"https://{domain}" : $"http://{localIp}:8000");
+
+            System.Windows.Clipboard.SetText(urlToCopy);
             NihilNoxCopyButton.Content = "📋 ¡Copiado!";
             Task.Delay(2000).ContinueWith(_ => Dispatcher.Invoke(() => NihilNoxCopyButton.Content = "📋 Copiar URL"));
         }

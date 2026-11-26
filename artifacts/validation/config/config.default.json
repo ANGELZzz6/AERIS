@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "global": {
+    "ocultarIconosEscritorio": true,
+    "idioma": "es",
+    "iniciarConWindows": false,
+    "atajoRestaurar": "Ctrl+Alt+Shift+D",
+    "atajoPausar": "Ctrl+Alt+P",
+    "atajoAlternar": "Ctrl+Alt+I",
+    "atajoAjustes": "Ctrl+Alt+A"
+  },
+  "activacion": {
+    "retardoAperturaMs": 150,
+    "retardoCierreMs": 300,
+    "grosorZonaPx": 8,
+    "monitores": "todos",
+    "comportamientoEsquinas": "propia",
+    "desactivarEnPantallaCompleta": true,
+    "desactivarMientrasSeArrastra": true,
+    "siempreEncima": true
+  },
+  "apariencia": {
+    "tema": "oscuro",
+    "colorFondo": "#1E1E2E",
+    "opacidad": 0.88,
+    "desenfoque": true,
+    "radioEsquinasPx": 12,
+    "sombra": true,
+    "fuente": "Segoe UI",
+    "tamanoIconoPx": 48,
+    "animacion": {
+      "tipo": "deslizar",
+      "duracionMs": 200,
+      "easing": "easeOutCubic"
+    }
+  },
+  "islas": [
+    {
+      "id": "izquierda",
+      "nombre": "Trabajo",
+      "habilitada": true,
+      "borde": "izquierdo",
+      "posicion": {
+        "ancla": "centro",
+        "desplazamientoX": 0,
+        "desplazamientoY": 0
+      },
+      "tamano": {
+        "anchoPx": 240,
+        "altoPct": 60,
+        "minAnchoPx": 160,
+        "minAltoPx": 180
+      },
+      "monitor": "todos",
+      "contenido": {
+        "fuentes": [ "Escritorio usuario", "Escritorio público" ],
+        "filtros": {
+          "incluir": [ "*.docx", "*.xlsx", "*.pdf", "*.pptx", "*.txt", "*.lnk" ],
+          "excluir": [ "desktop.ini" ],
+          "tipos": [ "archivo", "carpeta", "acceso directo" ]
+        },
+        "orden": "nombre",
+        "agrupacion": "ninguna",
+        "disposicion": "lista"
+      },
+      "estilo": {
+        "colorAcento": "#89B4FA"
+      }
+    },
+    {
+      "id": "derecha",
+      "nombre": "Accesos y Juegos",
+      "habilitada": true,
+      "borde": "derecho",
+      "posicion": {
+        "ancla": "centro",
+        "desplazamientoX": 0,
+        "desplazamientoY": 0
+      },
+      "tamano": {
+        "anchoPx": 240,
+        "altoPct": 45,
+        "minAnchoPx": 160,
+        "minAltoPx": 160
+      },
+      "monitor": "todos",
+      "contenido": {
+        "fuentes": [ "Escritorio usuario", "Escritorio público" ],
+        "filtros": {
+          "incluir": [ "*.exe", "*.lnk", "*.url" ],
+          "excluir": [ "desktop.ini" ],
+          "tipos": [ "archivo", "acceso directo" ]
+        },
+        "orden": "ultimoUso",
+        "agrupacion": "ninguna",
+        "disposicion": "rejilla"
+      },
+      "estilo": {
+        "colorAcento": "#A6E3A1"
+      }
+    },
+    {
+      "id": "superior",
+      "nombre": "Carpetas",
+      "habilitada": true,
+      "borde": "superior",
+      "posicion": {
+        "ancla": "centro",
+        "desplazamientoX": 0,
+        "desplazamientoY": 0
+      },
+      "tamano": {
+        "altoPx": 140,
+        "anchoPct": 50,
+        "minAnchoPx": 240,
+        "minAltoPx": 100
+      },
+      "monitor": "todos",
+      "contenido": {
+        "fuentes": [ "Escritorio usuario", "Escritorio público" ],
+        "filtros": {
+          "incluir": [ "*" ],
+          "excluir": [ "desktop.ini" ],
+          "tipos": [ "carpeta" ]
+        },
+        "orden": "nombre",
+        "agrupacion": "ninguna",
+        "disposicion": "rejilla"
+      },
+      "estilo": {
+        "colorAcento": "#F9E2AF"
+      }
+    }
+    ,
+    {
+      "tipo": "musica",
+      "id": "musica",
+      "nombre": "Música",
+      "habilitada": true,
+      "borde": "inferior",
+      "posicion": { "ancla": "centro", "desplazamientoX": 0, "desplazamientoY": 0 },
+      "tamano": { "anchoPx": 360, "altoPx": 180, "minAnchoPx": 320, "minAltoPx": 150 },
+      "monitor": "principal",
+      "presentacion": { "modo": "borde", "x": 300, "y": 300 },
+      "contenido": { "fuentes": [], "filtros": { "incluir": [], "excluir": [], "tipos": [] }, "orden": "nombre", "agrupacion": "ninguna", "disposicion": "lista" },
+      "estilo": { "colorAcento": "#89DCEB" }
+    }
+  ]
+}

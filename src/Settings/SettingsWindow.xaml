@@ -394,12 +394,17 @@
                         <Border x:Name="NihilNoxOptionsGroup" Background="#161625" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,10,0,10" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock Text="Ajustes de NihilNox Server" FontWeight="SemiBold" Foreground="#A6E3A1" Margin="0,0,0,10"/>
-                                <TextBlock Text="Controla el servidor FastAPI, ngrok, API Key, ruta de FFmpeg y cookies." TextWrapping="Wrap" Opacity="0.8" FontSize="12" Margin="0,0,0,10"/>
+                                <TextBlock Text="Controla el servidor FastAPI, ngrok, Cloudflare, API Key y ruta de FFmpeg." TextWrapping="Wrap" Opacity="0.8" FontSize="12" Margin="0,0,0,10"/>
 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                     <Button Content="▶ Iniciar" Click="OnStartNihilNoxClick" Width="110" Height="28" Margin="0,0,8,0" Background="#2e7d32" BorderBrush="#4caf50" Cursor="Hand"/>
                                     <Button Content="⏹ Detener" Click="OnStopNihilNoxClick" Width="110" Height="28" Margin="0,0,8,0" Background="#c62828" BorderBrush="#f38ba8" Cursor="Hand"/>
                                 </StackPanel>
+
+                                <TextBlock Text="Servidores y Túneles Activos:" FontWeight="SemiBold" Margin="0,4,0,4"/>
+                                <CheckBox x:Name="EnableLocalCheck" Content="Habilitar Servidor Local FastAPI" Margin="0,0,0,4"/>
+                                <CheckBox x:Name="EnableNgrokCheck" Content="Habilitar Túnel ngrok" Margin="0,0,0,4"/>
+                                <CheckBox x:Name="EnableCloudflareCheck" Content="Habilitar Túnel Cloudflare (trycloudflare)" Margin="0,0,0,8"/>
 
                                 <TextBlock Text="ngrok Auth Token:" Margin="0,4,0,2"/>
                                 <TextBox x:Name="NihilNoxTokenBox" Margin="0,0,0,6" TextChanged="OnNihilNoxConfigFieldChanged"/>

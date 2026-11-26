@@ -282,6 +282,9 @@ public partial class SettingsWindow : Window
                     if (NihilNoxDomainBox is not null) NihilNoxDomainBox.Text = cfg.GetValueOrDefault("ngrok_domain", "");
                     if (NihilNoxApiKeyBox is not null) NihilNoxApiKeyBox.Text = cfg.GetValueOrDefault("api_key", "");
                     if (NihilNoxFfmpegBox is not null) NihilNoxFfmpegBox.Text = cfg.GetValueOrDefault("ffmpeg_path", "");
+                    if (EnableLocalCheck is not null) EnableLocalCheck.IsChecked = cfg.GetValueOrDefault("enable_local", "true") == "true";
+                    if (EnableNgrokCheck is not null) EnableNgrokCheck.IsChecked = cfg.GetValueOrDefault("enable_ngrok", "true") == "true";
+                    if (EnableCloudflareCheck is not null) EnableCloudflareCheck.IsChecked = cfg.GetValueOrDefault("enable_cloudflare", "false") == "true";
                     break;
             }
         }
@@ -936,8 +939,11 @@ public partial class SettingsWindow : Window
         string domain = NihilNoxDomainBox?.Text.Trim() ?? "";
         string apiKey = NihilNoxApiKeyBox?.Text.Trim() ?? "";
         string ffmpeg = NihilNoxFfmpegBox?.Text.Trim() ?? "";
+        bool enableLocal = EnableLocalCheck?.IsChecked == true;
+        bool enableNgrok = EnableNgrokCheck?.IsChecked == true;
+        bool enableCloudflare = EnableCloudflareCheck?.IsChecked == true;
 
-        NihilNoxServerManager.SaveConfig(token, domain, apiKey, ffmpeg);
+        NihilNoxServerManager.SaveConfig(token, domain, apiKey, ffmpeg, enableLocal, enableNgrok, enableCloudflare);
         StatusText.Text = "Configuración de NihilNox guardada.";
     }
 
